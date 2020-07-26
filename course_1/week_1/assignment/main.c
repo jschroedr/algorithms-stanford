@@ -27,10 +27,8 @@ int main(int argc, char ** argv) {
         fprintf(stderr, "Expecting 3 arguments, received %d", argc);
     }
 
-    char * argA = argv[1];
-    char * argB = argv[2];
-
-    int result = karatsuba(argA, argB);
-    printf("Result of %s * %s using karatsuba multiplication is %d\n", argA, argB, result);
+    printf("%s %s", argv[1], argv[2]);
+    int result = karatsuba(argv[1], argv[2]);
+    printf("Result of %s * %s using karatsuba multiplication is %d\n", argv[1], argv[2], result);
     return EXIT_SUCCESS;
 }

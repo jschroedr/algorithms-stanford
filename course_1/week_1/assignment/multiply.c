@@ -32,16 +32,15 @@ char * splitLastHalf(char * x, int xlen) {
 }
 
 
-char * splitInput(char * input, int index, int len) {
-    char * split = malloc(sizeof(input));
+char * splitInput(char * input, char * split, int index, int len) {
     if (len == 1 && index == 0) {
         // zero-pad single length inputs that need to be split
-        strcpy(split, "0");
+        split = "0";
     }
     else if (len == 1 && index == 1) {
         // take the single input for the second half of the split
         strcpy(split, input);
-    } else {
+    } else if (len > 1) {
         // split using integer (floor) division
         int splitIdx = len / 2;
         if (index == 0) {
@@ -49,6 +48,8 @@ char * splitInput(char * input, int index, int len) {
         } else {
             strncpy(split, &input[splitIdx - 1], len - splitIdx);
         }
+    } else {
+        printf("ERROR: %s, %d, %d", input, index, len);
     }
     return split;
 }
@@ -78,13 +79,16 @@ int karatsuba(char * x, char * y) {
         return atoi(x) * atoi(y);
     }
     
-    char * a = splitInput(x, 0, lenX);
-    char * b = splitInput(x, 1, lenX);
-    char * c = splitInput(y, 0, lenY);
-    char * d = splitInput(y, 1, lenY);
-
+    char * a = malloc(sizeof(a));
+    splitInput(x, a, 0, lenX);
+    char * b = malloc(sizeof(b));
+    splitInput(x, b, 1, lenX);
+    char * c = malloc(sizeof(c));
+    splitInput(y, c, 0, lenY);
+    char * d = malloc(sizeof(d));
+    splitInput(y, d, 1, lenY);
     printf("a: %s, b: %s, c: %s, d: %s\n", a, b, c, d);
-
+    
     // subproblem one and two
     int resultA = karatsuba(a, c);
     int resultB = karatsuba(b, d);
