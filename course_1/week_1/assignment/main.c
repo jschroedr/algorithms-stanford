@@ -28,7 +28,7 @@ int main(int argc, char ** argv) {
     }
 
     printf("%s %s", argv[1], argv[2]);
-    int result = karatsuba(argv[1], argv[2]);
-    printf("Result of %s * %s using karatsuba multiplication is %d\n", argv[1], argv[2], result);
+    float result = karatsuba(argv[1], argv[2]);
+    printf("Result of %s * %s using karatsuba multiplication is %fl\n", argv[1], argv[2], result);
     return EXIT_SUCCESS;
 }
