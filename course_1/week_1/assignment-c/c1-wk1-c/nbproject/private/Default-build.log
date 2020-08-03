@@ -1,0 +1,4 @@
+mkdir -p GNU-amd64-Linux
+gcc -g   -c   -o GNU-amd64-Linux/multiply.o multiply.c
+gcc -g   -c   -o GNU-amd64-Linux/main.o main.c
+gcc -g      -o GNU-amd64-Linux/c1-wk1-appliction-c GNU-amd64-Linux/multiply.o GNU-amd64-Linux/main.o -lgmp -lm  

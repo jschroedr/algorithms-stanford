@@ -50,3 +50,5 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+/course_1/week_1/assignment-c/c1-wk1-appliction-c/build/
+/course_1/week_1/assignment-c/c1-wk1-appliction-c/dist/
