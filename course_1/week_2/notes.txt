@@ -1,0 +1,226 @@
+Week 2 Notes
+
+
+I Overview:
+
+Divide and conquer examples:
+	- counting the number of inversions in an array
+		- measuring similarity between two ranked lists
+		- collaborative filtering
+	- Strassen's recursive algorithm for matrix multiplication
+	- computing the closts pair of points in the plane
+
+The Master Method:
+Proof	
+You will be able to determine the running time of most of the divide-and-conquer algorithms out there
+Generalization of the recursion tree method we used for MergeSort
+
+Homework:
+	Suggested reading, chapters 3 and 4
+	Problem Set #2
+	Programming Assignment #2 (counting inversions implementation)
+
+
+==========================================================
+II. O(n log n) Algorithm for Counting Inversions (part i)
+
+The divide and conquer paradigm
+	1. Divide: problem into smaller sub-problems (sometimes only conceptual)
+	2. Conquer: the subproblems using recursion (to the base case)
+	3. Combine: Cleanup work after recursive problems end to stich answers
+		to the small problems into the answer for the large problem
+
+Counting Inversions
+
+	Input: array A of length n, containing the numbers 1-n (in some arbitrary order)
+
+	Output: number of inversions; pair of array indicies i, j where i is larger than j
+		Where ith entry is larger than jth entry
+
+	If the array contains 1-n in sorted order than number of inversions is 0
+
+	[0, 3, 2] = 1 inversion
+
+
+Examples:
+
+	[1,3,5,2,4,6]
+
+	Inversions:
+	
+		5,2
+		3,2
+		5,4
+
+	(inversions can be thought of finding i,j where they are out of order (sorted ASC))
+
+Write down numbers 1-n
+
+Write down numbers 1-n as they are givin in input
+
+Number of crossing line segments correspond to number of inversions
+
+	(draw lines connecting each input value, e.g. 3 => 3)
+
+
+Motivation: numerical similary measure between two ranked lists
+
+	Two people to rank movies in order of most favorite to least favorite
+
+		Your friends ranking - where are their inversions against your ranking?
+
+	Collaborative filtering - find other people with similar preferences (compare ranking of products bought)
+	
+		recommend new products to you based on what those other people bought
+
+			("you might also like...")
+
+
+NOTE: In an n-length array the largest number of inversions is n-choose-2...
+
+	AKA: (n(n-1)) / 2
+	
+
+High Level Approach:
+
+	Brute force:
+
+		double for-loop, if inverted add to inversion_count
+
+		quadradic number of inversions (n-choose-2) therefore quadradic running time
+
+		beat this running time using divide and conquer
+
+
+	Separate n into left and right
+
+	left inversion if i, j <= n/2
+	right inversion if i, j > n/2
+
+	split if i < n/2 < j
+
+	recurse on the left half of the array we will count exactly the number on that one half
+
+Compute left and right inversions recursively, and count split inversions using some after-the-fact combination work
+
+Here again, we have to clean up and count up amount of split inversions
+
+
+
+High-Level Algorithm
+
+
+Base Case:
+
+	if n=1 return 0
+	else
+		x = count 1st half of a, n/2)
+		y = count 2nd half of a, n/2)
+
+		z = count split inv (a, n)  // currently unimplemented
+
+	return x + y + z
+
+	goal: implement countSplitIn in linear (o(n))
+		then Count will run in O(n log n) time (just like Merge Sort)
+
+
+
+
+III O(n log n) Algorithm for Counting Inversions II
+
+split inversion: the early index is on left side, and the latter index is on right side
+
+idea: piggyback on merge sort
+
+Key Idea: have recursive calls both count inversions and sort (i.e. piggy back on merge sort)
+
+Motivation: merge subrouting naturally uncovers split inversions [as we'll see]
+
+Algorithm: "Sort and Count" -> count number of inversions in sub-array and return sorted
+
+	if n == 1: return 0
+	else:
+		b, x = SortAndCount(1st half of a, n/2)
+		c, y = SortAndCount(2nd half of a, n/2)
+		d, z = MergeAndCountSplitInv(b, c)
+		return x + y + z
+
+Psudocode for Merge:
+	D = output[length = n]
+	B = 1st sorted array [n/2]
+	C = 2nd sorted array [n/2]
+	D = sorted [n]
+	i = 1
+	j = 1
+	
+	for k = 1 to n
+		if b(i) < c(j)
+			d(k) = b(i)
+			i ++
+		else c(j) < b(i)
+			d(k) = c(j)
+			j ++
+
+NOTE: use this to patch together the sorted sub-arrays
+
+Note: if you have an array with no split inversions, then everything in the left-half
+	is smaller than everything in the right-half
+
+Exectution of Merge() on an array like this? It will simply take B as first half, and C as second half
+
+	No split inversions means D = concat(B, C)
+
+	***Copying elements from the second split array C
+		 says something about the number of split inversions
+
+Because we copy something from C before we exhaust B we expose the existence of split inversions
+
+	Copying "2" over in example (8:30) reveals two inversions
+	3,2
+	5,2
+
+	Two elements remaining in B when we copy over a value from C
+
+	Copying "4" over from B before 5 in C (last input) we discover inversion (5,4)
+
+
+***Claim: the split inversions involving an element of y of the 2nd array C are
+	 precisely the numbers left in the 1st array B when y is copied to 
+	the output D
+
+Proof: let x be an element of the 1st array B
+
+	1: if x copied to output D before y, then x < y
+		no inversion involving x & y
+
+	2: if y copied to output D before x, then y < x
+		x & y are a split inversion
+
+Number of elements remaining in B when element gets copied from C (y) are the number of split inversions
+
+
+Merge_and_CountSplitInv
+
+	while merging the two sorted subarrays, keep running total of number of split inversions
+
+	b, c = sorted sub-arrays, merged into d
+
+	split inversions = number of elements that remain in b when we copy an element from c into d
+
+
+Run time of subroutine:
+
+	Work done in merging is linear
+
+	Keeping count is constant time per element of d
+
+	O(n) + O(n) = O(n)
+
+		Note: this is a sloppy interpretation of running time but it is valid
+		
+		For example, if you added O(n) to O(n) n times, it would not be O(n) as a result
+
+Sort_and_Count runs in O(n log n) time, we piggy backed on MergeSort with the only difference being the constant which we don't care about
+
+
