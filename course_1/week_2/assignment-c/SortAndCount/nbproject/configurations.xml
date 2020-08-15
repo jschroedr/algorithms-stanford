@@ -25,8 +25,8 @@
                    displayName="Important Files"
                    projectFiles="false"
                    kind="IMPORTANT_FILES_FOLDER">
-      <itemPath>Makefile</itemPath>
     </logicalFolder>
+    <itemPath>Makefile</itemPath>
   </logicalFolder>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
@@ -41,6 +41,8 @@
           <standard>10</standard>
         </cTool>
       </compileType>
+      <item path="Makefile" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="inversion.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="inversion.h" ex="false" tool="3" flavor2="0">
@@ -69,6 +71,8 @@
           <developmentMode>5</developmentMode>
         </asmTool>
       </compileType>
+      <item path="Makefile" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="inversion.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="inversion.h" ex="false" tool="3" flavor2="0">

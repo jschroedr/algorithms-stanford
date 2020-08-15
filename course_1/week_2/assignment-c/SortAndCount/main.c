@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <gmp.h>
 #include "inversion.h"
 
 
@@ -21,8 +22,8 @@
  * 
  */
 int main() {
-    // char * fileName = "data/numbers.txt";
-    char * fileName = "data/numbers_test_10_16.txt";
+    char * fileName = "data/numbers.txt";
+    // char * fileName = "data/numbers_test_10_16.txt";
     
     FILE * fp;
     fp = fopen(fileName, "r");
@@ -53,13 +54,20 @@ int main() {
     }
     fclose(fp);
     
-    long long int inv = sortAndCount(lineArray, lineCount - 1);
+    mpz_t result;
+    mpz_init(result);
+    
+    sortAndCount(lineArray, (int)(lineCount - 1), result);
 
+    /*
     for(int i = 0; i < (lineCount - 1); i ++) {
         printf("%s\n", lineArray[i]);
     }
+    */
     
-    printf("\nTotal Inversions for %d lines is %lld", lineCount - 1, inv);
+    char * resultStr = mpz_get_str(NULL, 10, result);
+    
+    printf("\nTotal Inversions is %s", resultStr);
     return (EXIT_SUCCESS);
 }
 

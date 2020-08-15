@@ -6,11 +6,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <gmp.h>
 
 
 int getMergeItem(char ** a, int aLen, int aCount) {
     if(aCount < aLen) {
-        return atoi(*a);
+        char * aStr = a[aCount];
+        return atoi(aStr);
     }
     return 0;
 }
@@ -41,13 +43,16 @@ int sortAscending(const void * p1, const void * p2) {
  * @param d
  * @return 
  */
-int mergeAndCountSplitInv(char ** b, int bLen, char ** c, int cLen, char ** d) {
+void mergeAndCountSplitInv(char ** b, int bLen, char ** c, int cLen, char ** d, mpz_t z) {
     
     int i = 0;
     int j = 0;
     int k = 0;
-    int inv = 0;
     int n = bLen + cLen;
+    
+    mpz_t mpzBLen;
+    mpz_init(mpzBLen);
+    mpz_add_ui(mpzBLen, mpzBLen, bLen);
     
     // for each input up to the total, n
     while(k < n) {
@@ -61,7 +66,7 @@ int mergeAndCountSplitInv(char ** b, int bLen, char ** c, int cLen, char ** d) {
             // b is equal to c (prefer left array)
             // b input is smaller than c OR
             // c is out of inputs to copy
-        if ((x < y || x == y || j == bLen) && i != cLen ) {
+        if ((x < y || x == y || j == cLen) && i < bLen ) {
             setMergeItem(d, k, x);
         
             i++;
@@ -69,20 +74,26 @@ int mergeAndCountSplitInv(char ** b, int bLen, char ** c, int cLen, char ** d) {
         // if either:
            // c input is smaller than b OR
            // b is out of inputs to copy
-        } else if ((x > y || i == cLen) && j != bLen) {
+        } else if ((x > y || i == bLen) && j < cLen) {
             setMergeItem(d, k, y);
             
             j++;
             
             // inversions increment by number of elements left in b
             // when the item was copied from c
-            inv = inv + (bLen - i);
+            mpz_t diff;
+            mpz_init(diff);
+            
+            mpz_sub_ui(diff, mpzBLen, i);
+            mpz_add(z, z, diff);
+            
+            mpz_clear(diff);
         }
         k ++;
     }
     
-    // return the number of split inversions
-    return inv;
+    // return the number of split inversions as z's new value
+    return;
 }
 
 
@@ -99,31 +110,22 @@ char ** copyArray(char ** x, int len) {
 }
 
 
-void assignValues(char ** array, char ** x, int xLen) {
-    for(int i = 0; i < xLen; i ++) {
-        int len = strlen(x[i]);
-        array[i] = realloc(array[i], sizeof(array[i]) * len);
-        strncpy(array[i], x[i], len);
-        array[i][len] = '\0';
-    }
-    return;
-}
-
-
-
 char ** allocateSlice(char ** array, int len, int idx, int * destLen) {
     int midpoint;
     if (len % 2 == 0) {
         midpoint = len / 2;
+        *destLen = midpoint;
     } else {
         if (idx == 0) {
             midpoint = len / 2;
+            *destLen = midpoint;
         } else {
-            midpoint = len - (len / 2);
+            midpoint = len - (len / 2) - 1;
+            *destLen = midpoint + 1;
         }
     }
     
-    *destLen = midpoint;
+                
 
     if (idx == 0) {
         // if we want the first slice, we simply need to return the array (array[0])
@@ -135,35 +137,51 @@ char ** allocateSlice(char ** array, int len, int idx, int * destLen) {
 }
 
 
-long long int sortAndCount(char ** array, int len) {
+void sortAndCount(char ** array, int len, mpz_t result) {
     // base condition - return no inversions if the length is one
+    // @internal: since mpz_init sets value to 0, we do not have to worry
+    //      about setting a 0 value
     if (len == 1) {
-        return 0;
+        return;
     }
     
-    // divide the input array into its sub-parts: b and c
+    // divide the input array into its sub-parts: b, c
+    // @internal note that we copy these sub-arrays to enable free transformation
+    //      as a potential optimization, you may be able to get away with not 
+    //      copying the sub-arrays, though during the merge step I am not 
+    //      confident if this will impact the newly set array
     int bLen, cLen;
     char ** b = allocateSlice(array, len, 0, &bLen);
     char ** c = allocateSlice(array, len, 1, &cLen);
     
-    // calculate the inversions in each sub-part: x and y
-    long long int x = sortAndCount(b, bLen);
-    long long int y = sortAndCount(c, cLen);
+    // initialize bignum integers for b and c inversion counts: x, y
+    mpz_t x, y;
+    mpz_init(x);
+    mpz_init(y);
     
-    // assignValues(array, b, bLen);
-    // assignValues(array, c, cLen);
+    // for each slice b and c, set the inversion count to x and y respectively
+    // @internal these are recursive steps until given len = 1
+    sortAndCount(b, bLen, x);
+    sortAndCount(c, cLen, y);
     
-    // find the split inversions between a and b and merge them: d
-    // calculate split inversions as z
-    
-    // printf("\nCalling mergeAndCountSplitInv with %s and %s", *b, *c);
-    
-    // NOTE TO SELF: I think this is going to screw things up
-    long long int z = mergeAndCountSplitInv(b, bLen, c, cLen, array);  
-    
+    // calculate and set split inversions: z
+    mpz_t z;
+    mpz_init(z);
+    mergeAndCountSplitInv(b, bLen, c, cLen, array, z); 
+   
+    // free the helper string array copies: b, c
     free(b);
     free(c);
     
-    // return the sum of the inversions
-    return x + y + z;
+    // compute and set result to the bignum equivalent of x + y + z
+    mpz_add(result, result, x);
+    mpz_add(result, result, y);
+    mpz_add(result, result, z);
+    
+    // clear memory for helper variables: x, y, z
+    mpz_clear(x);
+    mpz_clear(y);
+    mpz_clear(z);
+    
+    return;
 }
