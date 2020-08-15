@@ -13,14 +13,20 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include "inversion.h"
 
 /*
  * 
  */
 int main() {
-    char * input = '1234';
-    int inversions = sortAndCount(input);
+    char * input = "8422323423423234323";
+    char * dest = malloc(sizeof(input) + 1);
+    strncpy(dest, input, strlen(input));
+    // TODO: inversions not calculating properly!
+    int inv = sortAndCount(dest);
         
+    printf("Total Inversions for %s: %d", input, inv);
     return (EXIT_SUCCESS);
 }
 

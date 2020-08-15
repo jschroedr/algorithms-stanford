@@ -224,3 +224,134 @@ Run time of subroutine:
 Sort_and_Count runs in O(n log n) time, we piggy backed on MergeSort with the only difference being the constant which we don't care about
 
 
+
+============================================================
+Strassen's Subcubic Matrix Multiplication Algorithm
+
+Dot product = products of individual components and add results
+
+Matrix Multiplication = zij = ith row of x (dot) jth column of y
+
+
+Note: input = n^2 where n is the length of each of the matricies
+
+
+Example (n=2)
+
+(a, b, c, d) * (e, f, g, h) = (ae + bg, af + bh, ce + dg, cf + dh)
+
+
+What is the asymptotic running time of the straightforward iterative algorithm for matrix multiplication?
+
+Theta(n^3)
+
+Cubic time of the input length n
+
+Proof: Theta(n) to compute a given Zij, and given n entries to compute (n for i, n for j), so n^2 * n = n ^ 3
+
+
+Recall: Divide and Conquer Paradigm
+
+- Divide: into smaller subproblems
+- Conquer: subproblems recursively
+- Combine: solutions of subproblems into one for the original problem
+
+
+Applying Divide and Conquer:
+
+To multiply square matricies, divide matrix "x" into four quadrants (or blocks)
+
+Each of these are n/2 (assume n is even, but it does not matter)
+
+Do the same for matrix Y
+
+Left with a, b, c, d, e, f, g, h
+
+Blocks will act like atomic elements
+	x * y = ( ae + bg , af + bh, ce + dg, cf + dh )
+
+
+YET - running will be stil be cubic (it is not obvious!)
+
+We are missing Gauss' trick, which holds us back here - can we do something equally as clever here?
+
+Yes - "Strassen's Algorithms" (1969)
+
+Step 1: recursively comput only 7 (cleverly chosen) products
+Step 2: do the necessary (clever) additions + subtractions (still O(n^2)
+FACT: better than n^3 time!
+
+(see master method lecture)
+
+
+The Details:
+
+The seven products: p1-7
+
+a-h, n/2 * n/2 sub matricies
+
+p1 = a(f-h), p2 = (a+b) * h, p3 = (c + d)e, p4 = d(g - e), p5 = (a+d)(e+h), p6 = (b-d)(g+h), p7 = (a-c)(e+f)
+
+x * y = (p5 + 4 - p2 + p6, p1 + p2, p3+ p4, p1 + p5 - p3 - p7)
+
+===============================================================
+O(n log n) Algorithm for Closest Pair I [Advanced - Optional]
+
+Useful for computer graphics
+
+Non-trivial proof
+
+Input: a set p = {p1, ... pn} of n points in the plane
+
+Notation: d(pi, pj) = Euclidean distance
+
+	So if pi = (xi, yi) and pj = (xj, yj)
+	d(pi, pj) = sqrt( (xi - xj)^2 + (yi + yj)^2 )
+	
+
+Output: a pair of distinct points that minimize euclidean distance
+
+
+
+Initial Observations:
+
+	Assumption: all points have distinct x-coordinates, distinct y-
+		coordinates
+
+	1-D version of closest pair =
+		1. sort points (O(nlogn) time)
+		2. scan points and return closts pair of adjacent points (O(n) time)
+		
+	STILL a quadratic time algorithm, even in the 1-d case
+	
+
+High-Level Approach
+	1: make copies of points sorted by x-coordinate (px) and
+		by y-coordinate (py)
+		
+	[o(nlogn) time]
+	
+	(note: you want to take away from this course the four free primitives in your computer at almost no cost)
+	
+	2: use Divide + Conquer
+	
+
+// following sorting the points in copies sorted by x and y coordinate, respectively
+
+ClosestPair(px, py)
+	let Q = left half of P, R = right half of P
+	
+	base case = <= 3 points
+
+	form Qx, Qy, Rx, Ry
+	
+	
+
+
+===============================================================
+
+
+
+
+
+

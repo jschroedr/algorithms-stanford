@@ -3,20 +3,23 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+#include <stdlib.h>
 #include <string.h>
 
 
-int getMergeItem(char * a, int aValid, int aCount) {
-    return aValid == 1 ? atoi(a[aCount]) : 0;
+int getMergeItem(char * a, int aLen, int aCount) {
+    if(aCount < aLen) {
+        char x = a[aCount] + '\0';
+        int xInt = atoi(&x);
+        return xInt;
+    }
+    return 0;
 }
 
 
-void setMergeItem(char * d, int dCount, int a, int * aCount, int aLen, int * aValid) {
-    d[dCount] = a;
-    if(aCount == aLen) {
-        aValid = 0;
-    }
-    aCount ++;
+void setMergeItem(char * d, int dCount, int a) {
+    // convert the number stored in a to a character and set
+    d[dCount] = a + '0';
     return;
 }
 
@@ -43,14 +46,8 @@ int mergeAndCountSplitInv(char * b, char * c, char * d) {
     int bLen = strlen(b);
     int cLen = strlen(c);
     
-    // quick sort each input array to be in order ascending
-    qsort(b, bLen, sizeof(b), sortAscending);
-    qsort(c, cLen, sizeof(c), sortAscending);
-    
     int i = 0;
-    int iValid = 1;
     int j = 0;
-    int jValid = 1;
     int k = 0;
     int inv = 0;
     int n = bLen + cLen;
@@ -60,21 +57,25 @@ int mergeAndCountSplitInv(char * b, char * c, char * d) {
         
         // safely get each merge item
         // if the source array is invalid a placeholder 0 int will be used
-        int x = getMergeItem(b, iValid, i);
-        int y = getMergeItem(c, jValid, j);
+        int x = getMergeItem(b, bLen, i);
+        int y = getMergeItem(c, cLen, j);
         
         // if either:
             // b is equal to c (prefer left array)
             // b input is smaller than c OR
             // c is out of inputs to copy
-        if (x < y || x == y || jValid == 0) {
-            setMergeItem(d, k, x, i, bLen, iValid);
+        if ((x < y || x == y || j == bLen) && i != cLen ) {
+            setMergeItem(d, k, x);
         
+            i++;
+            
         // if either:
            // c input is smaller than b OR
            // b is out of inputs to copy
-        } else if (y > x || iValid == 0) {
-            setMergeItem(d, k, y, j, cLen, jValid);
+        } else if ((x > y || i == cLen) && j != bLen) {
+            setMergeItem(d, k, y);
+            
+            j++;
             
             // inversions increment by number of elements left in b
             // when the item was copied from c
@@ -113,7 +114,11 @@ char * allocateSlice(char * a, int len, int idx) {
     char * slice = malloc(sizeof(char) * (midpoint + 1));
     
     // copy the string
-    strncpy(slice, a, midpoint);
+    if (idx == 0) {
+        strncpy(slice, a, midpoint);        
+    } else {
+        strncpy(slice, &a[len / 2], midpoint);        
+    }
     
     // null terminate the array
     slice[midpoint + 1] = '\0';
@@ -143,8 +148,7 @@ int sortAndCount(char * a) {
         
     // find the split inversions between a and b and merge them: d
     // calculate split inversions as z
-    char * d = malloc(sizeof(char) * (len + 1));
-    int z = mergeAndCountSplitInv(b, c, d);  
+    int z = mergeAndCountSplitInv(b, c, a);  
     
     // return the sum of the inversions
     return x + y + z;
