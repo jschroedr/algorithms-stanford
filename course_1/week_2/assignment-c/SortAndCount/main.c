@@ -16,17 +16,50 @@
 #include <string.h>
 #include "inversion.h"
 
+
 /*
  * 
  */
 int main() {
-    char * input = "8422323423423234323";
-    char * dest = malloc(sizeof(input) + 1);
-    strncpy(dest, input, strlen(input));
-    // TODO: inversions not calculating properly!
-    int inv = sortAndCount(dest);
-        
-    printf("Total Inversions for %s: %d", input, inv);
+    // char * fileName = "data/numbers.txt";
+    char * fileName = "data/numbers_test_10_16.txt";
+    
+    FILE * fp;
+    fp = fopen(fileName, "r");
+    if(fp == NULL) {
+        perror("Error opening file");
+        return EXIT_FAILURE;
+    }
+    
+    size_t len = 0;
+    size_t lineCount = 1;
+    int nread;
+    char * line = NULL;
+    char ** lineArray = NULL;
+    while((nread = getline(&line, &len, fp)) != -1) {
+        int lineLen = strlen(line);
+        if (atoi(line) == 0) {
+            break;
+        }
+        lineArray = realloc(lineArray, (lineCount * sizeof(lineArray)));
+        lineArray[lineCount - 1] = malloc((lineLen + 1) * sizeof(lineArray[lineCount - 1]));
+        strncpy(lineArray[lineCount - 1], line, lineLen);
+        if(lineArray[lineCount - 1][lineLen - 1] == '\n') {
+            lineArray[lineCount - 1][lineLen - 1] = '\0';
+        } else {
+            lineArray[lineCount -1] = lineArray[lineCount - 1] + '\0';
+        }
+        lineCount ++;
+    }
+    fclose(fp);
+    
+    long long int inv = sortAndCount(lineArray, lineCount - 1);
+
+    for(int i = 0; i < (lineCount - 1); i ++) {
+        printf("%s\n", lineArray[i]);
+    }
+    
+    printf("\nTotal Inversions for %d lines is %lld", lineCount - 1, inv);
     return (EXIT_SUCCESS);
 }
 

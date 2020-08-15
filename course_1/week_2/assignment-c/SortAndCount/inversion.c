@@ -3,23 +3,24 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 
-int getMergeItem(char * a, int aLen, int aCount) {
+int getMergeItem(char ** a, int aLen, int aCount) {
     if(aCount < aLen) {
-        char x = a[aCount] + '\0';
-        int xInt = atoi(&x);
-        return xInt;
+        return atoi(*a);
     }
     return 0;
 }
 
 
-void setMergeItem(char * d, int dCount, int a) {
-    // convert the number stored in a to a character and set
-    d[dCount] = a + '0';
+void setMergeItem(char ** d, int dCount, int a) {
+    // all numbers that are representable by int will fit in a 12-char array
+    int maxIntChars = 12;
+    d[dCount] = realloc(d[dCount], (sizeof(char) * maxIntChars) + 1);
+    snprintf(d[dCount], maxIntChars, "%d", a);
     return;
 }
 
@@ -40,11 +41,7 @@ int sortAscending(const void * p1, const void * p2) {
  * @param d
  * @return 
  */
-int mergeAndCountSplitInv(char * b, char * c, char * d) {
-    
-    // calculate the length of the input arrays assuming null termination 
-    int bLen = strlen(b);
-    int cLen = strlen(c);
+int mergeAndCountSplitInv(char ** b, int bLen, char ** c, int cLen, char ** d) {
     
     int i = 0;
     int j = 0;
@@ -84,71 +81,88 @@ int mergeAndCountSplitInv(char * b, char * c, char * d) {
         k ++;
     }
     
-    // null terminate d
-    d[k] = '\0';
-        
     // return the number of split inversions
     return inv;
 }
 
 
-int findMidpoint(int len, int idx) {
+char ** copyArray(char ** x, int len) {
+    char ** y = NULL;
+    for(int i = 0; i < len; i ++) {
+        y = realloc(y, sizeof(y) * (i + 1));
+        int sLen = strlen(x[i]);
+        y[i] = malloc(sizeof(x[i]) * (sLen + 1));
+        strncpy(y[i], x[i], sLen);
+        y[i][sLen] = '\0';
+    }
+    return y;
+}
+
+
+void assignValues(char ** array, char ** x, int xLen) {
+    for(int i = 0; i < xLen; i ++) {
+        int len = strlen(x[i]);
+        array[i] = realloc(array[i], sizeof(array[i]) * len);
+        strncpy(array[i], x[i], len);
+        array[i][len] = '\0';
+    }
+    return;
+}
+
+
+
+char ** allocateSlice(char ** array, int len, int idx, int * destLen) {
+    int midpoint;
     if (len % 2 == 0) {
-        return len / 2;
+        midpoint = len / 2;
     } else {
         if (idx == 0) {
-            return len / 2;
+            midpoint = len / 2;
         } else {
-            return len - (len / 2);
+            midpoint = len - (len / 2);
         }
     }
-}
+    
+    *destLen = midpoint;
 
-
-char * allocateSlice(char * a, int len, int idx) {
-    
-    // find the midpoint based on the even-ness of the number
-    int midpoint = findMidpoint(len, idx);
-    
-    // allocate the character array slice on memory
-    char * slice = malloc(sizeof(char) * (midpoint + 1));
-    
-    // copy the string
     if (idx == 0) {
-        strncpy(slice, a, midpoint);        
+        // if we want the first slice, we simply need to return the array (array[0])
+        return copyArray(array, midpoint);
     } else {
-        strncpy(slice, &a[len / 2], midpoint);        
+        // otherwise, we will return the ptr at the midpoint (destLen)
+        return copyArray(&array[midpoint], *destLen);
     }
-    
-    // null terminate the array
-    slice[midpoint + 1] = '\0';
-    
-    // return the pointer
-    return slice;
 }
 
 
-int sortAndCount(char * a) {
-    
-    // get the length of the input string, assuming its properly null terminated
-    int len = strlen(a);
-    
+long long int sortAndCount(char ** array, int len) {
     // base condition - return no inversions if the length is one
     if (len == 1) {
         return 0;
     }
-
+    
     // divide the input array into its sub-parts: b and c
-    char * b = allocateSlice(a, len, 0);
-    char * c = allocateSlice(a, len, 1);
+    int bLen, cLen;
+    char ** b = allocateSlice(array, len, 0, &bLen);
+    char ** c = allocateSlice(array, len, 1, &cLen);
     
     // calculate the inversions in each sub-part: x and y
-    int x = sortAndCount(b);
-    int y = sortAndCount(c);
-        
+    long long int x = sortAndCount(b, bLen);
+    long long int y = sortAndCount(c, cLen);
+    
+    // assignValues(array, b, bLen);
+    // assignValues(array, c, cLen);
+    
     // find the split inversions between a and b and merge them: d
     // calculate split inversions as z
-    int z = mergeAndCountSplitInv(b, c, a);  
+    
+    // printf("\nCalling mergeAndCountSplitInv with %s and %s", *b, *c);
+    
+    // NOTE TO SELF: I think this is going to screw things up
+    long long int z = mergeAndCountSplitInv(b, bLen, c, cLen, array);  
+    
+    free(b);
+    free(c);
     
     // return the sum of the inversions
     return x + y + z;

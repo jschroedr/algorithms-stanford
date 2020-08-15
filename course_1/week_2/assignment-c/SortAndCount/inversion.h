@@ -27,4 +27,4 @@ extern "C" {
 
 #endif /* INVERSION_H */
 
-int sortAndCount(char * a);
+int sortAndCount(char * a, int len);
