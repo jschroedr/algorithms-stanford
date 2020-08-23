@@ -349,9 +349,662 @@ ClosestPair(px, py)
 
 
 ===============================================================
+The Master Method: Motivation
+
+Warning: lots of math to come
+
+Motivation: potentially useful algorithmic ideas often need mathematical analysis to evalute
+
+Recall: grade-school multiplication algorithm users O(n^2) operations to multiply two n-digit numbers
+
+
+A Recursive Algorithm
+
+Write x = 10^n/2 a + b
+y = 10^n/2 c + d
+
+(where a, b, c, d are n/2-digit numbers)
+
+x * y = 10^nac + 10^n/2(ad + bc) + bd
+
+Algorithm #1: recurisvely compute ac, ad, bc, bd then compute * in obvious fashion (append zeros as necessary and add them up)
+
+
+A Recurrence
+
+T(n) = maximum number of operations this algorithm needs ot multiply two n-digit numbers
+
+Recurrence: express T(n) in terms of running time of recursive calls (smaller numbers)
+
+Every recursion has a base case
+
+Base Case: T(1) <= a constant  (1-digit numbers are bounded by a constant, which in and of itself does not matter)
+
+General Case: (work done by recursive calls) * (work done outside of recursion)
+
+For all N>1: T(n) <= 4T(n/2) + O(n)
+
+- 4 recursive calls on 4 n/2 digits (inside recursion)
+- grade school addition (final part) is linear (outside of recursion)
 
 
 
+A Better Recursive Algorithm (with Gauss' trick)
+
+Algorithm #2: Recursively compute ac, bd, (a + b)(c + d)
+
+Recall ad + bc = 3 - 1 - 2
+
+New Recurrence:
+
+Base Case: T(1) <= a constant
+
+For all N<1: T(n) <= 3T(n/2) + O(n)
+
+- Note, we ignore that (a+b)(c+d), which may have n/2 + 1 digits
+	- the extra +1 will not matter in final analysis
+	
+Linear work is a bit bigger in Gauss than in the original, but that increase is only by a constant factor, which is suppressed
+
+We don't know the running time of these algorithms, but we can be confident Gauss' trick must be better.
+
+Also note, that mergesort would be very similar, except it only does 2 recursive calls. Gauss' algorithm would be worse than MergeSort, but we don't know by how much
+
+Takeaway: Running time is non-obvious, and we still don't know what the new recurrence is 
+
+=====================================================================
+Formal Statement
 
 
+Master Method: a black box for solving recurrences - spits out an upper bound on the running time of a given method
+
+
+Assumption: all subproblems have equal size (merge sort, each of two recursive calls have the same n/2 size)
+
+
+Recurrence Format:
+	
+	Two ingredients:
+	
+	1) Base Case: T(n) <= a constant
+		
+		Assumption:
+		When the input size drops to a sufficiently small size
+		the subproblem is solved in constant time
+		
+	2) General Case: For all larger n:
+	
+		T(n) <= aT(n/b) + O(n^d)
+		
+		Note: we can ignore the constant inside the O(), although 
+		the other constant "d" does matter as it determines 
+		the exponent in the running time in the combine step
+		
+		Running time on input length n is bounded above by:
+		
+		a: number of recursive calls (>=1)
+		
+		b: factor by which input size shrinkage factor (>1)
+		
+			Recurse on half of original problem (b == 2)
+			
+		d: exponent in running time of "combined step"
+		
+			d can be as small as 0 (constant amount of work)
+			
+		a, b, d are numbers INDEPENDENT ON n
+		
+		------------------------------------------------------
+		Other notes/comments:
+		n/b: each of the same size, 1/b of original input size
+		
+			Note:Sometimes this is a fraction or an integer,
+				but this formula still remains true
+		
+		
+The Master Method (aka The Master Theorem)
+
+Upper bound on input size n is one of three things
+
+		O( n^d * log(any base) * n )	if a = b^d 
+T(n) = {	O (n^d )			if a < b^d
+		O( n^(log(b) * a) )		if a > b^d
+
+a = b^d
+1: running time is the same as the recurrence outside the recursive calls, just with a log(n) added on
+ 
+Note that logarithms only differ by a constant factor, so the base is ignored.
+ 
+a < b^d
+2: the work is dominated by what is done outside of the recursive call O(n^d) - in other words not much cost / computation at all is done in recursion
+
+a > b^d
+3: Note the logarithm base matters because the logarithm is in the exponent, and here it makes the difference between linear and, say, quadratic time
+
+
+Note the Master Method only gives O() running time - this is due to the use of O() in the original recurrence (and also to keep in the spirit of the course, which is securing running time guarantees)
+
+If you use Theta() in the original recurrence, then each of the master method outputs come with Theta() measurement quality (asymptotic exactness)
+
+
+====================================================================
+Examples
+
+
+#1: MergeSort
+	a = 2
+	b = 2
+	d = 1 (merge() is a linear-time subroutine)
+	
+2 == 2 ^ 1
+
+T(n) <= O(n^d log(n)) = O(nlogn) (since d == 1)
+
+Note: read about binary search (akin to searching by name in a phone book)
+
+Quiz: what are the respective values of a, b, d for a binary search of a sorted array, and which case of the Master Method does this correspond to?
+
+	a = 1 (one recursive calls)
+		If you are less than the result, recurse on the right half
+		else recurse on the left half
+		
+		Think of splitting the alphabet in two
+		
+	b = 2 (split by two)
+	
+		Recurse on a problem of half the size
+	
+	d = 0 (is the given value bigger or smaller or equal?)
+			
+		Constant time expression (independent of n)
+		
+a == b^d
+
+1 == 2^0
+
+O(n^d * log(n) ) = O(nlogn)
+
+
+````````````````````````````````````````````````````````````````````
+Example #3:
+
+
+First integer multiplication algorithms without Gauss' trick
+
+a = 4 (split each input into 2)
+b = 2 (split each input into 2)
+d = 1
+
+a = 4 > 2 ^ 1  (case 3)
+
+O(n ^ (log(2) * 4)) == O(n^2)
+
+
+The point of Gauss' trick is to turn 4 recursive calls into 3, so:
+
+a = 3
+b = 2
+d = 1
+
+a > b^d
+
+3 > 2^1
+
+We are still in case three of the master method
+
+T(n) = O(n ^ (log(b) * a) )
+
+O(n ^ (log(2) * 3)
+
+O(n^1.59)
+
+Certainly better than n^2!
+
+
+Example #5
+
+Strassen's matrix multiplication algorithm
+
+a = 7 (instead of 8, strassen's trick)
+
+b = 2
+
+d = 2  (n-squared work outside of the recursive calls)
+
+a > b ^ d
+
+7 > 2 ^ 2
+
+T(n) = O(n ^ (log(2) * 7))
+
+= O(n^2.81)
+
+This is an improvement over n^3
+
+
+
+Example #6
+
+Case 2 is very rare (a < b ^ d)
+
+Fictitius Recurrence
+
+T(n) <= 2T(n/1) + O(n^2)
+
+a = 2
+b = 2
+d = 2
+
+a < b ^ d
+
+2 < 4
+
+O(n^d)
+
+= O(n^2)
+
+
+==================================================================
+Master Method Proof (Part I)
+
+a recursive calls
+
+n / b input size each
+
+doing O(n^d) work outside of the recursive calls
+
+focus is conceptual - computations are worth seeing once in your life
+
+take away the conceptual meaning of the three cases of the master method
+
+	proof follows a recursion tree approach
+	
+	remember three types of recursion trees each of the three cases 
+	of the master method correspond to
+
+
+The reason we use math is because it provides an explanation of why things are the way they are
+
+Not a 100% rigorous proof, but complete on the conceptual level
+
+
+Preamble
+
+	Assume: 
+		recurrence is :
+			(i) 	T(1) <= c
+				- base kicks in when the input length is one
+				- number of operations in the base case is at most c
+				
+			(ii) 	T(n) <= aT(n/b) + cn^d
+				- recurrence notation, stated explicitly
+				
+			AND n is a power of b
+				- general case is similar, but more tedious
+				
+			Idea: generalize MergeSort analysis
+				(i.e. use a recusion tree)
+				
+
+What is the pattern? At level j, there are a^j subproblems, and n/b^j input size for each
+
+Subproblems goes up by a factor of a at each level in MergeSort
+	a^j subproblems at level j
+	
+j levels into the recursion, the input size has been shrunk by a factor of b, j times
+
+b = factor which the input size shinks for each recursion
+
+Number of levels if log(b) * n
+
+# of times you can divide n by b before reaching 1
+
+
+Recursion Tree Notes
+
+a branches for a recursive calls
+
+(work at a single level)
+compute work at a single level, j, sum up work for all levels to get total work for algorithm
+
+
+<= a ^ j * (c * (n / b ^ j) ^ d)
+
+# of level-j subproblems * size of each level-j subproblem
+
+= cn^d * (a/b^d) ^ j
+
+
+Total Work
+
+summing over all levels j = 0, 1, 2, ... log(b) * n
+
+total work <= cn^d * sum( (a/b^d) ^ j)
+			
+==================================================================
+Interpretation of the Three Cases
+
+Understanding three cases from the crazy expression we left off with
+
+How to think about (*)
+
+Our upper bound on the work at level j:
+
+	c(n^d) * (a/ b^d) ^j
+	
+Interpretation:
+	Tug of war between two forces (good and evil)
+	
+		b^d and a, respectively
+		
+		a = number of recursive calls; rate at which subproblems proliferate 
+		(the factor at which there are more subproblems at the next level)
+		
+		a is rate in that it is as a function of the level j
+
+		force of evil; algorithm runs slowly because there are more and more subproblems
+		
+		force of good; with each recursion level j, we do less work with each subproblem; the extent to which we do less work is (b^d)
+		
+		b = factor by which input size shrinks
+		
+		how much less work we do per subproblem = b^d
+	
+
+Note:
+
+If Rate of Subproblem Profileration (RSP) < Rate of Work Shrinkage (RWS)
+
+	The good force, the rate of shrinkage, is overpowering the number of subproblems.
+	
+	We will do less work as we go down the recursion tree
+	
+RSP > RWS
+
+	the bad force, the rate of subproblem proliferation is overpowering the shrinkage
+	
+	
+RSP = RWS
+
+	MergeSort, same amount of work at each level of the recursion tree
+	
+	
+
+Intuition for the 3 Cases
+
+RSP = RWS => Same amount of work at every level of the recursion tree
+
+	log amount of work at every level
+	
+	n^d work at the root
+	
+	n^d log (n) work total
+	
+
+RSP < RWS => less work each level
+
+	worst level is at the root
+	
+	might expect O(n^d) (proportional to the root, only true if the recursive calls have no cost or influence on asymptotic running time)
+	
+	
+RSP > RWS => more work each level
+
+	Most work at the leaves
+	
+	might expect O(# of leaves)
+	
+
+RSP and RWS governs which of the three recursion trees we are dealing with
+
+1: n^d log n
+2: n^d (hope)
+3: # of leaves (if constant time on each leaf)
+
+(Note: the third case has a mystery to be explained)
+
+===================================================================
+Problem Set 2
+
+
+Recall (469)
+
+Upper bound on input size n is one of three things
+
+		O( n^d * log(any base) * n )	if a = b^d 
+T(n) = {	O (n^d )			if a < b^d
+		O( n^(log(b) * a) )		if a > b^d
+
+
+1:
+T(n) 7 * T(n/3) + n^2
+
+a = 7
+b = 3
+d = 2
+
+a < 3^2
+
+Case 2
+theta(n^2)
+
+
+2: 
+T(n) = 9 * T(n/3) + n^2
+
+a = 9
+b = 3
+d = 2
+
+9 == 3^2
+9 == 9
+a == b^d
+n^2 log n
+
+
+3: 
+T(n) = 5 * T(n/3) + 4n
+
+a = 5
+b = 3
+d = 1
+
+5 > 3^1
+5 > 3
+n^(log(3) * 5)
+
+4:
+FastPower(a,b) :
+  if b = 1
+    return a
+  else
+    c := a*a
+    ans := FastPower(c,[b/2])
+  if b is odd
+    return a*ans
+  else return ans
+end
+
+a = 1; there is one recursive call per level j
+b = 2; the input gets halved each recursive call, toward the base case of 1
+d = 1; outside of the recursive calls, the computation happens in linear time
+
+1 < 2^1
+
+O(n), but theta(log(b)) since one divides b in half before recursing
+
+theta(log(b)) - constant work per digit in the binary expansion of b
+
+
+
+5:
+Smallest correct upper bound to recurrence:
+
+T(1) = 1
+T(n) <= T(sqrt(n)) + 1 for n > 1
+
+Not O(sqrt(n)) since T(n) != T([n - sqrt(n)]) + 1
+
+The input is not merely decreasing by sqrt(n), but is shrinking all the way down to sqrt(n)
+
+log(log(n)) - this answer may be easiest to see by writing n as 2^log(n) and then noting that every square-root operation cuts the exponent in half
+
+
+================================================================================
+Optional Problems
+
+The following problems are for those of you looking to challenge yourself beyond the required problem sets and programming questions. Most of these have been given in Stanford's CS161 course, Design and Analysis of Algorithms, at some point. They are completely optional and will not be graded. While they vary in level, many are pretty challenging, and we strongly encourage you to discuss ideas and approaches with your fellow students on the "Theory Problems" discussion form.
+
+1: You are given as input an unsorted array of n distinct numbers, where n is a power of 2. Give an algorithm that identifies the second-largest number in the array, and that uses at most n+log⁡2n−2n +\log_2 n - 2n+log2​n−2 comparisons.
+
+2: You are a given a unimodal array of n distinct elements, meaning that its entries are in increasing order up until its maximum element, after which its elements are in decreasing order. Give an algorithm to compute the maximum element that runs in O(log n) time.
+
+3: You are given a sorted (from smallest to largest) array A of n distinct integers which can be positive, negative, or zero. You want to decide whether or not there is an index i such that A[i] = i. Design the fastest algorithm that you can for solving this problem.
+
+4: You are given an n by n grid of distinct numbers. A number is a local minimum if it is smaller than all of its neighbors. (A neighbor of a number is one immediately above, below, to the left, or the right. Most numbers have four neighbors; numbers on the side have three; the four corners have two.) Use the divide-and-conquer algorithm design paradigm to compute a local minimum with only O(n) comparisons between pairs of numbers. (Note: since there are n2n^2n2 numbers in the input, you cannot afford to look at all of them. Hint: Think about what types of recurrences would give you the desired upper bound.) 
+
+
+=====================================================================
+Proof II
+
+Total work: <= cn^d * sum(log(b)^n for j) * (a/b^d)^j
+
+a = b^d = same work each level
+a < b^d = less work each level
+a > b^d = more work each level
+
+Goal: verify each scenarios actually occur, and demystify the third case formula
+
+
+First Scenario: a = b^d (same work each level)
+
+a / b^d = 1
+
+(1) ^ j = 1 for all j
+
+(*) = cn^d * (log(b)*n + 1)
+
+Since all logs only differ by a constant factor the actual log base gets suppressed (unless the base is involved in the exponent, in which case it will matter greatly)
+
+= O(n^d log(any base) * n)
+
+QED, easiest case
+
+
+Basic Sums Fact
+
+r = represents a/b^d
+
+Sum powers of r until kth power
+
+This sum is exactly (r^(k+1) - 1) / (r - 1)
+
+r = 2 and r = 1/2 are two canonical cases to give you an idea of how r works
+
+r = 2, for each k = 2, 4, 8, 16
+r = 1/2, for each k = 1/2, 1/4, 1/16
+
+Recursion trees with increasing work, the leaves dominate the running time
+
+Recursion trees with decreasing work, the root dominates the work (leaves are almost inconsequential)
+
+Upshot #1: If r < 1 is constant, <= 1/1-r = a constant in O()
+
+	i.e.: 1st term of sum dominates
+	
+Upshot #2: if r > 1 is constant, RHS is <= r^k * (1 + 1/r-1)
+
+	The sum of r^k will never be anything larger than twice the largest and final term
+	
+	i.e. the last term of a sum dominates
+	
+
+
+Case 2
+ 
+a < b^d
+
+Rate of proliferation is drowned out by the rate at which we do less work per subproblem
+
+	RSP < RWS
+	
+In the simplest possible scenario all of the meaningful work up to a constant factor is being done at the root
+
+(a / b^d)^r <= a constant independent of n; r (by basic sums fact)
+
+
+c * n^d * r
+
+=O(n^d)
+
+total work is dominated by the root
+
+
+
+Case 3:
+
+a > b^d
+
+	RSP < RWS
+	
+	Most work is done by the leaves
+	
+	We only worry about the leaves and throw everything else away (losing a constant factor of precision)
+	
+r in this case is bounded by the largest and last term
+
+	(basic sums fact)
+	
+	specifically, r = constant * larest term
+
+- note c and 'constant' mentioned in basic sums fact are suppressed
+	
+O(n^d * log(b)^n)
+
+n^d is cn^d with c suppressed
+
+log(b) * n = largest value of j we are ever going to get
+
+=O(n^d * a(/b^d)^(log(b) * n))
+
+(simplification occurs)
+
+=O(a^(log(b)*n))
+
+Note: a^(log(b) * n) is equal to the number of leaves of the recursion tree
+
+a times as many nodes as before, and this process goes until we reach the leaves
+
+input size starts at n, divided by a factor of b each time and it terminates once we get to one (hence, log(b) * n)
+
+number of leaves is a branching factor = a raised to the number of times we multiply by a, which is just the number of levels which is log(b) * n
+
+in other words, when a > b^d, then O(# leaves)
+
+in master method, it is n^log(b)a
+
+why different?
+
+a ^ log(b) * n = n ^ log(b) a
+
+
+a ^ (log(b) * n) => more intuitive
+
+n ^ (log(b) * a) => simpler to apply
+
+QED
+
+
+High level points of this proof worth remembering
+
+three different types of recursion trees (same, more, less work per level)
+
+remember running time for each case
+
+	1: a = b^d = O(n^d log * n)
+	
+	2: a < b^d = O(n^d)
+	
+	3: a > b^d = O(n^(log(b) * a))
+	
 
