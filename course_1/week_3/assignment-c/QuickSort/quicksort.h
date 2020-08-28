@@ -27,5 +27,5 @@ extern "C" {
 
 #endif /* QUICKSORT_H */
 
-void swap(int ** arr, int lIdx, int rIdx);
-void partition(int ** arr, int lIdx, int rIdx);
+void swap(int * arr, int lIdx, int rIdx);
+void partition(int * arr, int lIdx, int rIdx);

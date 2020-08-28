@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-void swap(int ** arr, int lIdx, int rIdx) {
+void swap(int * arr, int lIdx, int rIdx) {
     // copy by value into the local memory: temp
     int temp = arr[lIdx];
     
@@ -28,7 +28,7 @@ void swap(int ** arr, int lIdx, int rIdx) {
  * @param lIdx
  * @param rIdx
  */
-void partition(int ** arr, int lIdx, int rIdx) {
+void partition(int * arr, int lIdx, int rIdx) {
     
     // initialize the pivot value: p
     int p = arr[lIdx];
@@ -41,21 +41,15 @@ void partition(int ** arr, int lIdx, int rIdx) {
     
     // linear scan with swaps
     for(j = lIdx + 1; j <= rIdx; j ++) {
-        
-        // if we have looked at elements
-        // don't swap until we have seen elements bigger than the pivot
-        if (j > i) {
-            
-            if (arr[j] < p) {
-                // swap j and i
-                swap(arr, i, j);
 
-                // iterate i - move the pivot to the right once
-                i ++;
-            }
-            // otherwise arr[j] > arr[lIdx], do nothing
-            
+        if (arr[j] < p) {
+            // swap j and i
+            swap(arr, i, j);
+
+            // iterate i - move the pivot to the right once
+            i ++;
         }
+        // otherwise arr[j] > arr[lIdx], do nothing
         
     }
     
