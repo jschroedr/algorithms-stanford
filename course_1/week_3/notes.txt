@@ -1,0 +1,135 @@
+==========================================================================
+QuickSort
+
+- "greatest hit" algorithm
+- prevalent in practice
+- beautiful analysis
+- O(n log n) time "on average", works in place 
+	- i.e. minimal extra memory needed
+
+
+The Sorting Problem: 
+
+Input: array of n numbers, unsorted
+Output: same numbers, sorted in increasing order
+Assume: all array entries distinct
+Exercise: extend quicksort to handle duplicate entries
+
+[3, 8, 2, 5, 1, 4, 7, 6]
+
+Partitioning Around a Pivot
+
+Key idea: parition array around a "pivot element"
+
+- pick element of array (3, idx = 0)
+
+- rearrange array so that:
+	- left of pivot => less than pivot
+	- right of pivot => greater than pivot
+	
+[2, 1, 3, 6, 7, 4, 5 ,8]
+
+idx 0, 1 < pivot
+idx > 2, > pivot
+
+Note: puts pivot in its "rightful position"
+
+	- third largest element winds up in third position of the array
+	
+
+Two Cool Facts About Partition
+
+	1) linear time (O(n)), no extra memory
+		[see next video]
+		
+	2) reduces problem size (enables divide and conquer approach)
+	
+
+
+QuickSort: High-Level Description
+
+	Tony Hoore, circa 1961
+
+	Beginning of career, 26-27
+	
+
+QuickSort( arrary A, length n ):
+
+	if n = 1:
+		return
+		
+	// choose pivot element
+	p = ChoosePivot(A, n)  // unimplemented
+	
+	// partition array around pivot element
+	// partition A around p
+	firstPart, secondPart = MakePartition()
+	
+	// less than p, first recursive call
+	firstPart = QuickSort()
+	
+	// greater than p, second recursive call
+	secondPart = QuickSort()
+	
+
+====================================================================================	
+Partitioning Around a Pivot
+
+
+Key Idea: partition array around a pivot element
+
+	- pick element of array (say, first)
+	
+	- ensure everything less then is to the left
+	
+	- ensure everything greater than is to the right
+	
+
+Two Cool Facts About Partition
+
+1) linear O(n) time, no extra memory [see next video]
+2) reduceds problem size
+
+
+Partitioning Subroutine Implementation
+
+Easy Way Out: using O(n) w/ extra memory, easy to partition around pivot in O(n) time
+
+[3, 8, 2, 5, 1, 4, 7, 6]
+
+Linear scan and bucket less than and greater than
+
+Add to the left (idx ++) and to the right (idx --) of a copy of the allocated array
+
+
+In-Place Impelementation
+
+Assume: pivot = 1st element of the array
+
+[if not, swap pivot <-> 1st element as preprocessing step]
+
+High-Level Idea: two groups, what we've seen and what we haven't seen
+
+Split what we've seen into [less than, greater than]
+
+Keep pivot at idx 0 until the very end
+
+all elements less than the pivot come first, all elements greater than the pivot come last
+
+- single scan through array
+- invariant: everything looked at so far is partitioned
+
+Keep track of:
+	- boundary of what we have looked at / haven't looked at (j)
+	- where is the split for less than / greater than pivot (i)
+	
+Each step must advance j to maintain linear O(n)
+
+The first examined element is indeed partitioned (no comparison necessary)
+
+If the first element is bigger then pivot, i remains the same
+
+If any subsequent element is smaller, we must swap (another routine, perhaps)
+
+
+
