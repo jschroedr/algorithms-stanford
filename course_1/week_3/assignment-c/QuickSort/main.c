@@ -20,6 +20,8 @@
  */
 int main(int argc, char** argv) {
     
+    int problem = 3;
+    
     int * arr = malloc(sizeof(arr) * 8);
     
     arr[0] = 3;
@@ -32,11 +34,16 @@ int main(int argc, char** argv) {
     arr[7] = 6;
     
     // swap(arr, 0, 1);
-    partition(arr, 0, 7);
+    // partition(arr, 0, 7);
+    // quicksort(arr, 8);
+    int p = choosePivot(arr, 8, problem);
+    printf("the index is %d, the value is %d", p, arr[p]);
     
+    /*
     for(int i = 0; i < 8; i ++) {
         printf("%d", arr[i]);
     }
+    */ 
     
     return (EXIT_SUCCESS);
 }

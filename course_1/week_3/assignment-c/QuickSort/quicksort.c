@@ -28,15 +28,6 @@ void swap(int * arr, int lIdx, int rIdx) {
     
 }
 
-
-int choosePivot(int * arr, int rIdx) {
-    
-    // todo: function to determine a suitable pivot
-    
-    return -1;
-}
-
-
 /**
  * partition
  * ===========================================================================
@@ -79,24 +70,59 @@ void partition(int * arr, int lIdx, int rIdx) {
 }
 
 
-void quicksort(int * arr, size_t n) {
+int choosePivot(int * arr, int n, int problem) {
+    if(problem == 1) {
+        // problem 1: always use the first element of the array
+        return 0;
+    } else if (problem == 2) {
+        // problem 2: always use the final element of the array
+        return n - 1;
+    } else {
+        // problem 3
+
+        // consider the first, middle and last element of the array
+        int first = arr[0];
+        int last = arr[n - 1];
+
+        // if n is odd, take the split + 1 : otherwise take the split
+        int middleIndex = n % 2 == 0 ? n / 2 : n / 2 + 1;
+        middleIndex --;  // make it zero-indexed
+        int middle = arr[middleIndex];
+        
+        // identify which element is the median (between the other two)
+        // and return its index as the pivot
+        if (first >= middle && first <= last) {
+            return 0;
+        } else if (middle >= first && middle <= last) {
+            return middleIndex;
+        } else {
+            return n - 1;
+        }       
+    }
+}
+
+
+void quicksort(int * arr, int n, int problem) {
     
-    // base case: return if input length is 1
-    if(n == 1) {
+    // base case: return if input length is less than or equal to 1
+    if(n <= 1) {
         return;
     }
     
     // choose a suitable pivot to partition by
-    int p = choosePivot(arr, n);
+    int p = choosePivot(arr, n, problem);
+    
+    // swap the pivot index with the first element
+    // TODO
     
     // partition arr around p
     partition(arr, p, n);
     
     // recursively sort first part
-    quicksort(arr, p);
+    quicksort(arr, p, problem);
     
     // recursively sort second part
-    quicksort(arr[p], n - p);
+    quicksort(&arr[p], n - p, problem);
     
 }
 

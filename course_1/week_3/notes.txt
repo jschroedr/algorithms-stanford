@@ -133,4 +133,86 @@ If the first element is bigger then pivot, i remains the same
 If any subsequent element is smaller, we must swap (another routine, perhaps)
 
 
+==============================================================================
+Choosing a Good Pivot
+
+
+Running time of QuickSort depends on the quality of the pivot
+
+
+If we implement QuickSort so that ChoosePivot always selects the first element of the array, the running time is quadratic on an input array that is already sorted (O(n^2)), which is VERY BAD for a sorting algorithm
+
+The lower bound on this algorithm is quadratic because we recurse on every element in the array (using this method of choosing the pivot)
+
+
+
+We ideally want the median element (n/2 split for recursion) - best case scenario
+
+If in every recursive call we get a 50/50 split, the running time is O(nlogn)
+
+The recurrence matches the recurrence that governs MergeSort (nlogn)
+
+Since the recursive calls are at most n/2, T(n) <= 2T(n/2)
+
+Subproblems shrink at the size of subproblem proliferation
+
+Since we have a tight recurrence on partition (theta n) we actually get a tighter estimate (theta nlogn) in this magical scenario of perfect pivots
+
+
+Random Pivots
+
+QuickSort is the first example of randomized algorithms (e.g. flipping a coin to get performance)
+
+Big Idea: RANDOM PIVOTS
+
+Each input in array of length k has the same odds of selection
+
+This algorithm will run differently on the same input on different runs
+
+In the 1970s it was discovered that randomness could make solving certain problems very fast, more elegant and easier to maintain
+
+Hope: a random pivot is "pretty good" "often enough"
+
+Any pivot that gets us a reasonable split (close to n/2) will yield nlogn time
+
+
+Two intuitive points:
+
+1: A 25/75 split is defined as good enough for nlogn (claim by Roughgarden)
+
+Because we do not have balanced sub-problems, you cannot use Master Method to analyze this
+
+2: We don't have to get that lucky to get a 25/75 split
+i.e. in an array of 1-100 we can pick anything such that 25 >= x >= 75
+
+50% probability we get a split that is "good enough"
+
+
+
+Mathematical Analysis
+If you really want to know if an idea is good or bad, you need mathematical analysis
+
+
+Quicksort Theorem: For every input array of length n, the average running time of QuickSort (with random pivots) is O(nlogn)
+
+NOTE: every input (no assumptions about the data)
+
+- recall our guiding principles - general principles with great guarantees independent of the data
+
+If you have a dataset that fits in the memory of your machine, sorting is a computational primitive - QuickSort runs fast enough that you can think of it as "for free"
+
+Go ahead and sort the array - it might make your life easier in other algorithmic or computational problems
+
+NOTE: "average" is over random choices made by the algorithm 
+(i.e. pivot choices)
+
+
+
+
+
+
+
+
+
+
 

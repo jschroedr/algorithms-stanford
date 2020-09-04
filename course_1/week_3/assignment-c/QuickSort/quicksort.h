@@ -27,5 +27,7 @@ extern "C" {
 
 #endif /* QUICKSORT_H */
 
+int choosePivot(int * arr, int n, int problem);
 void swap(int * arr, int lIdx, int rIdx);
 void partition(int * arr, int lIdx, int rIdx);
+void quicksort(int * arr, int n);
