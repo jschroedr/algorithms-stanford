@@ -29,5 +29,5 @@ extern "C" {
 
 int choosePivot(int * arr, int n, int problem);
 void swap(int * arr, int lIdx, int rIdx);
-void partition(int * arr, int lIdx, int rIdx);
-void quicksort(int * arr, int n);
+int partition(int * arr, int lIdx, int rIdx);
+void quicksort(int * arr, int n, int problem, int * tcmp);

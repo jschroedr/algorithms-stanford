@@ -39,7 +39,7 @@ void swap(int * arr, int lIdx, int rIdx) {
  * @param lIdx
  * @param rIdx
  */
-void partition(int * arr, int lIdx, int rIdx) {
+int partition(int * arr, int lIdx, int rIdx) {
     
     // initialize the pivot value: p
     int p = arr[lIdx];
@@ -67,6 +67,7 @@ void partition(int * arr, int lIdx, int rIdx) {
     // final swap pivot element with the right-most element less than it
     swap(arr, lIdx, (i - 1));
     
+    return i;
 }
 
 
@@ -91,18 +92,22 @@ int choosePivot(int * arr, int n, int problem) {
         
         // identify which element is the median (between the other two)
         // and return its index as the pivot
-        if (first >= middle && first <= last) {
-            return 0;
-        } else if (middle >= first && middle <= last) {
-            return middleIndex;
+        if ((first < middle && middle < last) || (last < middle && middle < first)) {
+           return middleIndex; 
+        } else if ((middle < first && first < last) || (last < first && first < middle)) {
+           return 0; 
         } else {
-            return n - 1;
-        }       
+           return n - 1;   
+        }
     }
 }
 
 
-void quicksort(int * arr, int n, int problem) {
+void incrementTotalComparisons(int m, int * tcmp) {
+    *tcmp = m == 0 ? *tcmp : *tcmp + (m - 1);
+}
+
+void quicksort(int * arr, int n, int problem, int * tcmp) {
     
     // base case: return if input length is less than or equal to 1
     if(n <= 1) {
@@ -113,16 +118,25 @@ void quicksort(int * arr, int n, int problem) {
     int p = choosePivot(arr, n, problem);
     
     // swap the pivot index with the first element
-    // TODO
+    if(p != 0) {
+        swap(arr, 0, p);
+    }
     
     // partition arr around p
-    partition(arr, p, n);
+    p = partition(arr, 0, n - 1);
     
-    // recursively sort first part
-    quicksort(arr, p, problem);
+    // handling for when p == 2
+    p = p == 2 ? 1 : p;
     
-    // recursively sort second part
-    quicksort(&arr[p], n - p, problem);
+    // calculate the subarray size: m
+    int m;
     
+    // recursively sort first part and add to total comparisons
+    m = p;
+    incrementTotalComparisons(m, tcmp);
+    quicksort(arr, p, problem, tcmp);
+    // recursively sort second part and add to total comparisons
+    incrementTotalComparisons(m, tcmp);
+    quicksort(&arr[p], n - p, problem, tcmp);
 }
 
