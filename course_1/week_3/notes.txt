@@ -106,6 +106,7 @@ In-Place Impelementation
 
 Assume: pivot = 1st element of the array
 
+NOTE:
 [if not, swap pivot <-> 1st element as preprocessing step]
 
 High-Level Idea: two groups, what we've seen and what we haven't seen

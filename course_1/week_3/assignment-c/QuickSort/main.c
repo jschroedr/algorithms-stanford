@@ -20,19 +20,23 @@
  */
 int main(int argc, char** argv) {
     
-    int * arr = malloc(sizeof(arr) * 3);
+    int * arr = malloc(sizeof(arr) * 8);
     
     arr[0] = 3;
-    arr[1] = 1;
-    arr[2] = 7;
+    arr[1] = 8;
+    arr[2] = 2;
+    arr[3] = 5;
+    arr[4] = 1;
+    arr[5] = 4;
+    arr[6] = 7;
+    arr[7] = 6;
     
     // swap(arr, 0, 1);
-    partition(arr, 0, 2);
+    partition(arr, 0, 7);
     
-    printf("%d", arr[0]);
-    printf("%d", arr[1]);
-    printf("%d", arr[2]);
-    
+    for(int i = 0; i < 8; i ++) {
+        printf("%d", arr[i]);
+    }
     
     return (EXIT_SUCCESS);
 }
