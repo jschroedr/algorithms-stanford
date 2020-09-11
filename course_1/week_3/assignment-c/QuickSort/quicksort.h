@@ -1,5 +1,5 @@
 /* 
- * @title: QuickSort Source File
+ * @title: QuickSort Header File
  * @author: Jake Schroeder 
  * @license:     
  *      This file is part of "QuickSort Algorithm in C" 
