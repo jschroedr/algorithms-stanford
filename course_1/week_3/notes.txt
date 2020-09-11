@@ -206,7 +206,7 @@ Go ahead and sort the array - it might make your life easier in other algorithmi
 NOTE: "average" is over random choices made by the algorithm 
 (i.e. pivot choices)
 
-
+We've seen QuickSort vary between upper bound O(n^2) and lower bound O(nlogn). What is amazing about QuickSort, you are almost never going to see anything but the lower bound thanks to randomization
 
 
 

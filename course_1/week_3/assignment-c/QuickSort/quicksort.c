@@ -67,7 +67,7 @@ int partition(int * arr, int lIdx, int rIdx) {
     // final swap pivot element with the right-most element less than it
     swap(arr, lIdx, (i - 1));
     
-    return i;
+    return i - 1;
 }
 
 
@@ -125,18 +125,18 @@ void quicksort(int * arr, int n, int problem, int * tcmp) {
     // partition arr around p
     p = partition(arr, 0, n - 1);
     
-    // handling for when p == 2
-    p = p == 2 ? 1 : p;
+    incrementTotalComparisons(n, tcmp);
+    
+    // p = p == 0 ? 1 : p;
     
     // calculate the subarray size: m
     int m;
     
     // recursively sort first part and add to total comparisons
-    m = p;
-    incrementTotalComparisons(m, tcmp);
     quicksort(arr, p, problem, tcmp);
+    
     // recursively sort second part and add to total comparisons
-    incrementTotalComparisons(m, tcmp);
-    quicksort(&arr[p], n - p, problem, tcmp);
+    m = n - (p + 1);
+    quicksort(&arr[p + 1], m, problem, tcmp);
 }
 
