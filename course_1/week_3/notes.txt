@@ -208,6 +208,359 @@ NOTE: "average" is over random choices made by the algorithm
 
 We've seen QuickSort vary between upper bound O(n^2) and lower bound O(nlogn). What is amazing about QuickSort, you are almost never going to see anything but the lower bound thanks to randomization
 
+============================================================================
+Probability Review
+
+Topics Covered
+	Sample Spaces
+	Events 
+	Random Variables
+	Expectation - average value of a random variable
+	Linearity of Expectation - very important property
+	
+See also:
+	Lehman-Leighton notes (free PDF)
+	wikibook on discrete probability
+	
+
+SAMPLE SPACES
+
+"all possible outcomes"
+
+Big Omega = sample space
+
+(my notes big omega = OM())
+
+in algorithms, Big Omega is usually finite (therefore discrete probability)
+
+also: each outcome Big Omega has a probability p(i) >= 0
+	- probability of each possible outcome should be non-negative
+	- constraint: the sum of the probability should be one
+		at least one thing should happen
+
+Example #1: Rolling 2 dice Big Omega (36 possible outcomes)
+	Each outcome should be equally likely, 1/36
+	
+Example #2: Choosing a random pivot in outer QuickSort call
+	BigOmega{1, 2, ... n}
+	and p(i) = 1/n for all OM()
+	
+
+EVENTS
+an event is a subset of all the things that could happen
+an event is a subset of OM
+
+
+probability of an event is sum of probabilities of all the outcomes contained in that event
+
+example event "the sum of two dice is 7"
+
+S { 
+	(1,6), (2,5), (3,4), (4,3), (5,2), (6,1)
+}
+
+6 members of the 36 possible outcomes are contained in the definition of this event
+
+1/36 probability for each outcome, and the event probability equals the sum of the various outcomes included in the event definition, so:
+
+
+1/36 * 6 outcomes in event S = 6/36 or 1/6 probability of this event (sum = 7)
+
+
+
+event example 2:
+
+randomly chosent pivot gives a 25-75 split or better
+
+looking for a reasonably good split, both sides of the pivot have at least 25% 
+
+50% probability to get a 25/75 split or better
+
+if array had 1-100, we want both subarrays to be at least len(25)
+
+if we choose the element that is 26 or bigger in value, then the left side will have at least 25
+
+if we choose the element that is 75 or smaller will give 25 elements on the right side
+
+anything in the middle 50% is acceptable as a pivot choice, therefore giving a 1/2 probability
+
+S = {
+	((n/4) + 1)th smallest element, ..., (3n/4)th smallest element
+}
+
+Pr[S] = n/2 / n
+
+cardinality (n/2) times the likelihood of each of the outcomes (n/1, or n, since each of the outcomes is equally likely)
+
+
+Randomized QuickSort has good pivots 1/2 the time, which helps give intuition as to why it is fast
+
+
+RANDOM VARIABLES
+
+Some statistic that measures what happens in the random outcome
+
+A random variable X is a real-valued function defined on the sample space OM
+
+Given an outcome (random outcome) this gives you a number
+
+
+Ex #1: sum of the two dice (number representing the random outcome of both dice)
+
+Ex #2: size of subarray passed to the 1st recursive call
+
+number of elements in the input array smaller than the pivot 
+
+
+
+EXPECTATION
+
+the average
+
+let X:OM -> IR be a random variable
+
+The expectation E[X] (aka expected value) of X = average value of X
+
+(weighed against the probability of the various outcomes)
+
+ 
+Math: sum of everything that could happen (i = one possible outcome)
+		i	
+	get the value of this random value when that outcome occurs
+		X(i)
+	weight it times the probability of that outcome occuring
+		P(i)
+		
+=Sigma X(i) * P(i)
+
+
+
+Quiz 3: What is the expectation of the sum of two dice?
+
+the average value is 7
+
+use linearity of expectation (which we have not covered)
+
+
+Quiz 4: Which of the folling is closest to the expectation of the size of the subarray passed to the first recurisve call in QuickSort?
+
+n/2
+
+technically n-1/2
+
+expected value of both recursive calls is equal, and it is the first recursive call
+
+
+let X = subarray size
+// use expectation to solve
+Then E[X] = 1/n * 0 + 1/n * 1
+
+1/n * 0: minimum of pivot resulting in zero elements to the first recursive call
+1/n * 1: second-smallest of pivot resulting in one elmenet to the first recursive call
+...
+1/n * (n-1)
+	
+(didn't really make sense)
+
+
+
+LINEARITY OF EXPECTATION
+
+Common in analysing random processes
+
+Claim [LIN EXP]: let x1, ..., xn be random variables
+	defined on OM (same sample space)
+	
+	Then: 
+		the expected value of a sum of random variables
+		is equal to the sum of the expectations of the individual random 			variables
+		
+	CRUCIAL: Holds even when the random variables are not independent
+	
+The same would not be true for products, only for sums
+
+EX #1: x1, x2 for results of first and second die
+
+E[Xj] = 1/6 (1 + 2 +3 +4 +5 + 6) = 3.5
+
+By lin exp, the expected value of two die is simply double; 7
+
+E[X1] + E[x2] = E[x1] + E[x2] = 3.5 + 3.5 = 7
+
+
+Simple to prove and unbelievably useful
+
+
+
+Example: Load Balancing
+
+assigning processes to servers
+
+Problem: need to assign n processes to n servers
+
+Proposed Solution: assign each process to a random server
+
+Question: what is expected number of processes assigned to a server?
+
+Load Balancing Solution:
+
+	Sample space OM = all n^n assignments of processes to servers (n choices for 		each of the n processes, each equally likely since chosen at random)
+
+	Let Y = total number of processes assigned to the first server
+	
+	Goal: E[Y] - expected number of processes assigned to a server
+	
+	Instead of computing the sum by enumerating all outcomes, compute the 		expecatation for one and then sum for all n
+	
+	For given process, j:
+	Compute Xj = {1 if jth process assigned to first server, 0 otherwise}
+	
+	// Xj, example of an indicator variable
+	
+	(whether or not the jth process gets assigned to the first server)
+	
+	Observe: the total number of processes that gets assigned to the first 			server is the sum from j=1 to n of Xj
+	
+	Win: We only have to compute the expectation of a single variable, Xj 
+		A very simple indicator variable
+		
+	E[Y] = E[sum(Xj)]  // since y = sum(xj)
+	
+	// Linearity of expectation
+	
+	sum(Pr[Xj = 0] * 0 + Pr[xj = 1] * 1)
+	
+	***
+	so probability that jth process gets assigned to the first server is 1/n
+	where n is the number of servers "competing" randomly for that process
+	***
+	
+	We then sum 1/n, n times; which is just 1!
+	
+	Because there are both n servers and n processes to delegate, each server 			has an expected number of processes: 1
+	
+
+===========================================================================
+Review (pt II)
+
+Topics:
+	Conditional Probability
+	Independence of Events
+	
+
+CONDITIONAL PROBABILITY
+
+Sameple Space OM = "all possible outcomes"
+	in algorithms, OM is usually finite
+
+Each outcome i E OM has a probability p(i) >= 0
+	where i represents a single outcome
+	
+	Constraint: E p(i) = 1  // all the probabilities sum to 100%
+	
+An event is a subset S <= OM 
+
+The probability of an event S is E (iES) p(i)
+	sum of probabilities where i is within S sample space subset
+	
+	probability of all of outcomes that the event contains
+	
+
+CONDITIONAL PROBABILITY
+
+Let x,y <= OM be events (both events of the same sample space)
+
+x and y could be disjoint (no intersection) or they could have a non-trivial intersection
+
+x and y need not cover all of omega
+
+Then: Pr[X | Y]  // probability of x given y; something in y happened
+ 	=	
+ 		Pr[X intersect Y]/ Pr[Y]
+ 		// this is by definition the probability of x given y
+ 		
+ 
+ Quiz 1:
+ Suppose you roll two fair dice; what is the proabability that at least one die is a 1, given that the sum of the two dice is 7?
+ 
+ 1/3
+ 
+ Two events: 
+ x = at least one die is a 1
+ y = sum of two dice is a seven
+ 
+ y = {(1,6), (2,5), (3,4), (4,3), (5,2), (6,1)}
+ 
+ Pr[X intersect Y] / Pr[Y]
+ 
+ X intersect Y is (1,6), (6,1)
+ 
+ X intersect Y = 2/36
+ Y = 6/36
+ 
+ 2/36 / 6/36 = 1/3
+ 
+ 
+ 
+ INDEPENDENCE OF EVENTS
+ 
+ Definition: events x, y <= OM are independent if and only if
+ 
+ Pr[X intersect Y] = Pr[X] * Pr[Y]
+ 
+ you check: this holds if and only if Pr[X | Y] = Pr[X]
+ 
+ knowing that y happened gives you no information about whether X happened
+ 
+ Pr[Y|X] = Pr[Y]
+ 
+
+WARNING: indepedence is a very subtle concept;
+	your intuition about independence is very often wrong
+	no other source causes so many bugs in proofs by researchers as
+		misunderstandings of independence and using intuition
+		instead of formal definition
+		
+Rule of Thumb: if things are independent by construction, then you can proceed that they are indepedent
+
+If there is any doubt about independence, then assume dependence
+
+
+INDEPENDENCE OF RANDOM VARIABLES
+
+Definition: random variables a, b (both defined on OM) are independent 
+
+The events Pr[A = a], Pr[B = b] are independent for all a, b
+
+Expectations just multiply in this case!
+
+(this ONLY holds for independent random variables)
+
+Pr[A = a and B = b] = Pr[A = a] * Pr[B = b]
+
+The probability of both happening is simply equal to the indidividual probability of each happening
+
+Claim: if A, B are independent, then E[A*B] = E[A] * E[B]
+
+
+because a and b are independent this probabilty factors (multiplies), which extends linearity of expectation (which allows simply for summing)
+
+
+EXAMPLE
+
+Let x1, x2 = sig(0,1) be random, and x3 = x1 + x2  XOR (exclusive or, 1 if 1,0 pair)
+
+x1 and x2 are equally likely to be 1 or 0
+
+Formally OM = { 00 0, 10 1, 01 1, 11 0}, each equally likely
+
+Claim: X1 and X3 are independent
+
+
+============================================================================
+Analysis I: A Decomposition Principle
+
+
 
 
 
