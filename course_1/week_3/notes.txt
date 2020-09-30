@@ -561,11 +561,343 @@ Claim: X1 and X3 are independent
 Analysis I: A Decomposition Principle
 
 
+For a worst-case input of length n, the average running time of QuickSort (with random pivots) is O(nlogn)
+
+Average running time is far closer to the best cast scenario (nlogn) than the worst case (n^2)
+
+
+PRELIMINARIES
+
+Fix input array A of length n.
+
+Sample size OM = all possible outcomes of random choice in QuickSort (i.e. pivot sequences)
+
+Key Random Variable: (computing expectation of) for o E OM (given pivot sequence)
+
+	pivot sequence (sigma)
+
+	C (sig) = # of comparisons between two input elements made by QuickSort (given random choices sigma)
+
+	comparison = between two different entries (e.g. is the 3rd > 7th entry?)
+
+Lemma: running time of QuickSort dominated by comparisons
+
+	formally: constant (c) such that:
+		total operations of any type of what QuickSort executes is higher by a constant factor than c
+
+Remaining goal: E[c] = O(nlogn)
+
+	Prove that the average number of comparisons is O(nlogn)
+
+	Prove the expectation of the random variable c (total comparisons) is bounded by O(nlogn)
+
+Decomposition Principle: c == total comparisons, it is a complicated variable, however (bounded by n^2 and nlogn)
+
+
+BUILDING BLOCKS
+
+Master method does not apply
+
+1. Size of the two subproblems is random (random, unbalanced subproblems)
+
+	Could be as good as a perfectly balanced split, or as bad as a 0, 99 split
+
+	You are not going to get all subproblems with the same size unless you are extremely lucky
+
+2. All subproblems will not have the same size (not going to happen in QuickSort unless you are very lucky)
+
+Decomposition Principle: take a complicated random variable, break it down and make it simple, and use the simple variable to solve the complicated problem
+
+Building Blocks:
+
+	[A = fixed input array, of length n]
+
+Notation: Zi = ith smallest element of A
+
+	ith order statistic
+
+	IS NOT the element of the ith position of the A unsorted array
+
+	Once we sort the array, only then, is it the ith index
+
+	[6, 8 ,10 ,2]
+
+	z1 = 2
+	z2 = 6
+	z3 = 8
+	z4 = 10
+
+
+Simpler Random Variables
+
+	Given choice of pivots (sig), and given choices i, j (between 1 < n, and given i < j)
+
+	Xij(sig) = # of tims zi, zj get compared in QuickSort
+
+		i.e. how many times do these two elements get compared as we execute QuickSort?
+
+
+QUIZ: Fix two elements of the input array. How many times can these two elements get compared with each other during the execution of QuickSort?
+
+0 or 1
+
+The only place where comparisons between elements happens, is in the Partition() subroutine
+
+The pivot element is compared to each other element of the subarray only ONCE
+
+	Every single comparison involves the pivot element
+
+One of these elements MUST be the pivot in order for a pair of elements to be compared
+
+The pivot is then excluded from both recursive calls, therefore once a pair is compared they will not be compared again!
+
+Thus: each Xij is an "indicator" (i.e. 0-1) random variable
+
+
+A DECOMPOSITION APPROACH
+
+So:	
+
+	C(sig) = # of comparisons between input elements
+
+	Xij = # of comparisons between Zi and Zj
+
+Thus:
+	
+	Every comparison involves one pair of elements (i, j)
+
+		Therefore, we can write C as a sum of the Xijs
+
+	Double Sum = iterate over all ordered pairs ij, where i and j are between 1 and n, and where i < j
+
+		Easy way to write that iteration
+
+	no matter what the chosen pairs are we have the equality
+
+		A(sig), C(sig) = SUM(i => n-1)SUM(j => n) Xij(sig)
+
+	By linearity of expectation: E[C] = SUM(i => n-1)SUM(j => n) E[Xij]
+
+		Power: turning E[C] (complicated) into the double sum of the Expected Value of E[Xij] random variable
+
+	Since E[Xij] = 0 * Pr[Xij = 0] + 1 * Pr[Xij = 1] = Pr[Xij = 1]
+
+		^expanded definition of expectation
+
+		possibility it takes on the value 0, plus the possibility it takes on the value one
+
+		>>Expected value of Xij is just the probability Xij = 1!
+
+	Thus: E[C] = SUM(i = 1 => n -1) SUM(j = i + 1 => n) Pr[Zi, Zj get compared]
+
+		iterate over all ordered pairs
+
+		and multiply by the probability that Zi, Zj get compared
+
+	Next video will nail the probability that Zi, Zj get compared
+
+
+(NOTE: this is a pratical DECOMPOSITION PRINCIPLE example)
+
+A General Decomposition Principle
+
+1. Identify random variable Y that you really care about.
+
+	We knew based on the lemma that we cared about the # of comparisons
+
+2. Express Y as a sum of indicator random variables:
+
+	Y = SUM(l = 1 => m) Xe
+
+3. Apply linearity of expectation:
+
+	E[Y] = SUM(l = 1 => m) Pr[Xl = 1]
+
+Upshot: to understand the complicated left hand side, understand the simpler probability of these (Pr[]) various events
+
+	In QuickSort, the probability Xi and Xj get compared
+
+=========================================================================================
+Analysis II: The Key Insight
+
+
+Recall:
+
+	C(sig) = # of comparisons QuickSort makes with pivots sig
+
+	Xij(sig) = # of times zi + zj get compared
+
+	zi + zj denote the ith and jth smallest elements of the subarray, respectively
+
+	Every comparison involves sum(zi) sum(zj), therefore we can express 
+	
+		E[C] = SUM(i = 1 => n -1)SUM(j = i-1 => n) Pr[Xij = 1]
+
+
+KEY CLAIM: Pr[Zi, Zj get compared] = 2 / j - i + 1
+
+	So long as i < j (e.g. V i < j)
 
 
 
+PROOF OF KEY CLAIM:
+
+	Fix Zi, Zj with i < j
+
+	Consider the set Zi, Zi+1, ..., Zj-1, Zj
+
+	Recall the initial array is not sorted, these elements we are considering are NOT contiguous
+
+Inductively:
+
+	These j - i + 1 elements live parellel lives in the following sense
+
+	Inductively:
+
+		As long as none of these are chosen as a pivot, all are passed to the same recursive call
+
+			"Living in harmony"
+
+	
+	Consider the first among Zi ... Zj that gets chosen as pivot
+
+		1: if Zi or Zj gets chosen first, they are definitely compared
+
+		2: if Zi+1 or Zj -1 gets chosen first, then they are definitely NOT compared
+
+			When you choose a pivot and partition an array, all the comparisons involve the pivot (two elements not of the pivot do not get compared)
+
+			Because the pivot comes between them, Zi and Zj will be split into separate recursive calls
+
+	These two observations make up the "Key Insight" in the QuickSort algorithm
 
 
+PROOF OF KEY CLAIM (con'd)
+
+1: Zi or Zj chosen first => they get compared
+2: One of Zi+1 ... Zj-1 chosen first => Zi Zj never compared
+
+Note: since pivots always chosed uniformly at random, each of Zi ... Zj is equally likely to be the first
+
+=> Pr[Zi, Zj get compared] = 2 / (j - 1 + 1)
+
+2 = choices that lead to case 1
+
+(j - i + 1) = total # of choices
+
+	RECALL: Zi ... Zj
+
+	Zi = smaller member of an array
+	Zj = larger memeber of an array (when sorted ASC)
+
+	Ex: If i and j are one after the other (e.g. 3 and 4), they have a 100% probability of being compared because
+		we recurse Partition until the base case of 1, so ***elements that are adjecent in value are destined to be compared***
+
+	***Elements that are NOT adjacent in value (as an expression of Z[], the sorted array) have a probability of NEVER being compared***
+
+		This probability of non-comparison increases for each value in-between the given pair i, j
+
+So: E[C] = SUM(i = 1 => n-1) SUM(j = i + 1 => n) 2 / (j - i + 1)
+
+====================================================================================
+Analysis III: Final Calculations
 
 
+C = # of comparisons QC makes
+
+Express C as sum of indicator variables for each variable Xij
+	- Counting the number of comparisons involving the ith smallest and jth smallest entries in the array (either 0 or 1 total comparisons)
+
+Comparison probability for ith and jth smallest element in the array, the probability is 2 / (j - i + 1)
+
+
+E[C] = 2 * SUM(i = 1 < n-1) SUM(j = i+1 < n) 1/(j-i+1)
+
+	2 / (j - i + 1) translates by pulling the 2 out front as a leading constant (suppressed in big O notation)
+
+
+Prove the number of comparisons is bounded by O(nlogn)
+
+Biggest "sum-and" will be when i and j are right next to each other (j is one bigger than i)
+	sum-ands big as one half, with a quadradic number of terms
+
+Using a sum-and value of 1/2 and a quadradic number of terms, we could very easily derive an upper bound that is quadradic in N
+
+We are going to have to be more clever in how we evaluate the double-sum)
+
+	Think about a fixed value of i in the outermost sum, and then ask how big can the innermost sum be?
+
+	NOTE: for each fixed i, the inner sum is SUM(j = i+1 => n) * 1/(j-1 + ) 
+
+		As j gets bigger, the denominator gets bigger and sum-ands get smaller
+
+		The biggest sum is when j is the smallest possible (namely, i + 1)
+
+		When j is i + 1, the sum-and is 1/2
+
+		Every inner sum will run from 1/2 ... 1/n
+
+	Lets take the initial expression and bound it by a single upper sum
+
+So: 
+
+	n choices for i
+
+	E[C] <= 2 * n * SUM(k = 2 => n) 1 / k
+
+	The one of the inner sums is the one occurring when i = 1
+
+	Therefore, make a change of variables and express the upper bound on each inner sum
+	
+		as the sum from K equal two to N of one over K
+
+	The single sum makes it much more manageable
+
+
+	CLAIM: SUM(k = 2 => n) 1/k cannot be very big, it is only logarithmic in n
+
+	This will complete the proof by giving us an overall upper bound of 2 * n * log(n)
+
+	nlogn bound with quite-reasonable constants (namely, 2)
+
+
+COMPLETING THE PROOF
+
+E[C] <= 2n SUM(k=2 => n) 1/k
+
+PROOF OF CLAIM:
+
+(graph with points corresponding to fractions of the form 1/k)
+
+e.g. if you were to graph 1/k
+
+k on x and height 1/k
+
+1,1
+1,1/2
+1,1/3
+
+f(x) = 1/x kisses the corners of each of the rectangles made by the graph
+
+The sum can be thought of as the area in all the rectangles, ***upper bounded by the area under the curve defined by 1/x***
+
+The sum(k=2 => n) 1/k is bounded by the integral (1 => n) 1/x dx (area under the curve)
+
+1/x = ln(x)
+
+Therefore, since the integral is from 1 => n, the area under the curve (the bound for 1/k)
+	can be represented as ln(n) - ln(1)
+
+	the natural log of 1 is 0 (ln(1) = 0), so therefore we are left with the natural log of n (ln(n))
+
+
+Therefore, we have proven the claim that the SUM(k = 2 => n) 1/k is at most logarithmic
+
+With that expression being logarithmic, we have the final upper computational bound of 2 * n * ln(n)
+
+	O(nlogn) with "quite reasonable" constants
+
+	This is the number of comparisons only, the running time is dominated by comparisons
+
+	Moreover, QuickSort runs in place, so its added computational load outside of comparisons is minimal
 
