@@ -1,0 +1,947 @@
+WEEK 4 NOTES
+
+
+These lectures study the problem of computing the ith smallest element of an input array (e.g. the median).
+
+We go over a super-practical randomized algorithm that has LINEAR expected running time.
+
+The analysis is a bit different - essentially, there is a cool way to think about the progress the algorithm makes
+inter terms of a simple coin-flipping experiment.
+
+Linearity of Expectation returns
+
+
+A NOTE ON OPTIONAL MATERIAL
+
+1. Turing Award-winning authored algorithm for linear-time solution to the Selection problem (using median-of-medians idea 
+    for guaranteed good pivots)
+
+2. There is no comparison-based sorting algorithm with a worst-case running time better than nlogn
+
+
+A NOTE ON PART IX: GRAPHS AND THE CONTRACTION ALGORITHM
+
+(second set of lectures)
+
+Moving from randomized algorithms to graph algorithms
+
+Review graphs and the most standard ways of representing them (most commonly by adjacency tests)
+
+Random Contraction Algorithm: (Karger) this algorithm solves the minimum cut problem -- 
+    Given an undirect graph, separate the vertices into two non-empty groups to minimize the number of "crossing edges"
+
+    Such problems come up when reasoning about, for example, physical networks, social networks, and images
+
+    The algorithm was perhaps the first strong evidence that graph problems could be added to the long list of "killer applications"
+    of random sampling
+
+PLOT TWIST: a simple but useful trick for transforming an algorithm that almost always fails into one that almost always succeeds
+
+HOMEWORK: problem set #4 covers the randomized selection algorithm, cuts in graphs, and the contraction algorithm
+    programming assignment #4 asks you the implement the contraction algorithm and use it to compute the min cut of the graph that we provide
+
+SUGGESTED READINGS: Algorithms Illuminated (Part 1), Chapter 6
+
+OTHER READING: Kleinberg and Tardos "Algorithm Design" (specifically 13.2 and 13.5)
+
+=========================================================================================================
+Randomized Selection - Algorithm
+
+Problem: find the ith order statistic of an array on O(n) time
+
+No comparison-based sort can be better than MergeSort (better than O(nlogn))
+
+Remember:
+Probability Part I (random variables, expectation and linearity of expectation)
+
+
+THE PROBLEM
+Input: array A with n distinct numbers and a number i E {1, ... } // E = between
+
+Output: ith order statistic (i.e. ith smallest element of the input array)
+
+Example: median
+
+Distinct elements give simplicity; algorithm can be altered to handle duplicate elements
+
+
+REDUCTION TO SORTING
+O(nlogn) algorithm
+
+1. apply MergeSort
+2. return ith element of the sorted array
+
+Reduction: you can solve one problem by reducing it to another problem that you already know how to solve
+
+(avoid contentness, we should not stop here)
+
+Fact: can't sort any faster than O(nlogn) [see optional video]
+
+	General purpose/comparison based sorting!
+	
+Next: O(n) time (randomized) by modifying QuickSort
+
+see optional video: O(n) time deterministic algorithm (median of medians)
+
+	warning => not as practical
+	
+
+PARTITION SUBROUTINE REVIEW ("PARTITIONING AROUND A PIVOT")
+
+RANDOMIZED SELECTION
+Idea is essentially to choose a pivot at random, and then:
+	- if that random pivot winds up at the ith order statistic, we got lucky! return
+	- else if the pivot is greater than the ith order statistic, recurse on the lower half
+	- else if the pivot is less than the ith order statistic, recurse on the upper half
+	
+
+PROPERTIES OF RSELECT
+
+Claim: RSelect is correct (guaranteed to output ith order statistic).
+
+Proof: by induction. [like in optional QuickSort video]
+
+Running Time?: Depends on "quality" of the chosen pivots
+
+	Good pivots = 25-75 splits or better
+		
+	Recall: we know pivots have a 50% change of being "good" given this definition
+	
+Theoretically, the worst case running time if Theta(n^2)
+
+	i.e. if you choose the minimum element every time
+	
+If you choose the median for every pivot (magical case)
+
+	The recurrence is T(n) <= T(n/2) + O(n)
+	
+^ Just for intuition - in the best case of pivot choices we get what we want
+
+Hope: random pivot is "pretty good" often enough for O(n)
+
+
+RUNNinG TIME OF RSELECT
+Theorem: for every input array length n, the average running time of RSelect is O(n)
+
+	- holds for every input [no assumptions on data]
+	
+	- "average" is over random pivot choice made by the algorithm
+	
+============================================================================================
+RANDOMIZED SELECTION - ANALYSIS
+
+This theorem will prove that selection is a fundamentally simpler problem than sorting
+
+General Purpose Subroutine: no matter what input data is
+
+
+PROOF I: TRACKING PROGRESS VIA PHASES
+
+Note: RSelect uses <= cn (instead of O() notation)
+
+c = operations outside the recursive call
+
+** notation to help track progress **
+[from partitioning]
+Notation: RSelect is in phase "j", if current array size between (3/4)^j+1 * n and (3/4)^j * n
+
+
+i.e. an array with 100 elements, if you stil have more than 75 elements after the first recursive call, you are still in phase 0, if you have less than or equal to 75 elements you are in phase 1
+
+Purpose: phases and Xjs give us a clean definition of progress as we proceed through recursion 
+
+running time of RSelect <= Sum(phases j) Xj * c * (3/4)^j * n
+
+(3/4)^j * n <= array size during phase j
+
+c * = amount of work we do on each phase j subproblem
+
+Xj * = number of subproblems 
+
+Don't forget any subproblems - sum over all phases j 
+
+This right-hand side of the inequality is a random variable, and is referred to later as STAR
+
+
+PROOF II: REDUCTION TO COIN FLIPPING
+
+Xj = # of recursive calls during phase j
+
+recall definition of phase j = size between (3/4)^j * n and (3/4)^j * n
+
+If we choose a split at least 25-75 split or better, the current phase ends
+
+Recall: 50% probability of getting a 25-75 split or better
+
+A coin flip acts as a valid correspondence for a good pivot (heads = good pivot, tails = bad pivot)
+
+
+PROOF III: Coin Flipping Analysis
+Let N = number of coin flips until you get heads.
+
+(a "geometric random varaible")
+
+E[N] = 1 + 1/2 * E[N]
+
+// note, you always need at least one flip to get heads
+
+
+1 = first coin flip, mandatory
+1/2 = probability of tails
+E[N] = if you don't get heads, you start all over again
+
+// after the first flip, it is either heads or tails 
+
+unique value that N could have in light of this equation is 2
+
+2 coin flips on average to get heads
+
+E[N] = 2
+
+
+PUTTING IT ALL TOGETHER
+
+// c and n are yanked out front from STAR
+expected running time of RSelect <= cn SUM(phase j) (3/4)^j * Xj
+
+expectation E[] comes from the random pivot choices our code makes
+
+*any time we are going to analyze a randomized process we will use linearity of expectation at some point
+
+E[Xj] = E[# of coin flips] = 2
+
+<= 2 * c * n * SUM(phase j) * (3/4)^j
+
+SUM(phase j) * (3/4)^j [VIA GEOMETRIC SUM] =  1 / (1 - 3/4) = 4
+	
+running time of RSelect <= 8cn
+
+
+DSELECT NOTES
+
+Worse due to (1 higher leading constants and (2 not-in-place
+
+THE DSELECT ALGORITHM
+
+DSelect(array A, length n, order statistic i)
+1. Break A into groups of 5, sort each group (constant work to sort each group of 5, 120 operations to be exact)
+2. C = the n/5 "middle elements"
+3. p = DSelect(C, n/5, n/10) [recursively computes the median of C]
+4. Partition A around p (Theta(n))
+5. If j = i return p
+6. If j < i return DSelect(1st part of A, j-1, i)
+7. [else if j > 1] return DSelect(2nd part of A, n-j, i-j)
+
+T(?) in 6 or 7 because we don't know what the size is
+
+
+ROUGH RECURRENCE
+
+Let T(n) = maximum running time of DSelect on an input array of length n.
+
+There is a constant c >= 1 such that:
+	1. T(1) = 1
+	2. T(n) <= cn + T(n/5) + T(?)
+	
+	cn = sorting the groups, partition
+	
+	T(n/5) = recursive call in line 3
+	
+	T(?) = recursive call in line 6 or 7
+	
+	
+THE KEY LEMMA
+
+2nd recursive call guaranted to be on an array of size <= 7/10 * n (roughly)
+
+Upshot: can replace "?" by "7/10 * n"
+
+Rough Proof: 
+	 
+	Let K = n/5 = # of groups
+	Let xi = ith smallest of the k "middle elements"
+	
+[so pivot = xsub(k/2)]
+
+There better be at least 30% of the element that are bigger and smaller than the pivot
+
+Goal: We never want to deal with any more than 70% of the remaining elements
+
+
+ROUGH PROOF OF KEY LEMMA
+
+Pivot is larger than 50% of 60% of the columns (southwestern quadrant) AND pivot is smaller than 50% of roughly 60% of the groups (northeaster quadrant)
+
+
+==========================================================================================
+LINEAR-TIME SELECTION: DETERMINISTIC SELECTION (ANALYSIS II)
+
+In earlier video we found that DSelect guarantees no more than 70% of elements for each pivot using median of medians
+
+We in this section focus on whether this extra effort was a Pyrhic victory - did we work too hard to guarantee a good pivot?
+
+
+ROUGH RECURRENCE
+
+T(1) = 1
+T(n) <= cn + T(n/5) + T(7/10 * n)
+
+Master Method has one key assumption - every sub-problem solved must have the same size
+
+DSelect violates this assumption, and therefore we cannot use the master method
+
+Strategy: "hope and check"
+
+Hope: there is some constant a [independent of n] 
+	such that T(n) <= a * n for all n >= 1
+	
+	(upside-down A = for all)
+	
+	[if true, then T(n) = O(n) and algorithm is linear-time]
+	
+
+ANALYSIS OF ROUGH RECURRENCE
+	T(1) = 1
+	T(n) <= c * n + T(n/5) + T(7/10 * n)
+	
+Claim: let a = 10c
+	Then T(n) a * n for all n >= 1
+	
+Why 10 * c?
+
+Proof: by induction on n (reverse engineer)
+
+Base Case: T(1) = 1 <= a * 1 (since >= 1)
+Inductive Step: [n > 1] 
+Inductive Hypothesis: T(k) <= a(k) for all k strictly less than n
+
+We have T(n) <= c(n) + T(n/5) + T(7/10 * n)
+
+	<= cn + a(n/5) + a(7/10n)
+	
+	= n(c + 9/10a) = an (via our choice of a = 10c)
+	 
+	 
+===========================================================================
+OMEGA(nlogn) LOWER BOUND FOR COMPARISON BASED SORTING
+
+
+A SORTING LOWER BOUND
+Theorem: every "comparison-based" sorting algorithm has worst-case running time OM(nlogn)
+	best case = nlogn
+	
+Comparison-Based Sort: access input array elemetns only via comparisons
+	i.e. there is no way to access the guts of the array (like qsort() with its cmp function)
+	
+	= "general-purpose sorting method"
+	
+Examples: MergeSort, QuickSort, HeapSort
+
+Non-Examples: 
+
+BucketSort (distributional assumption required)
+CountingSort (only for integer data types, ideally small and with the largest element k in proportion to n)
+RadixSort (extension of counting sort; you assume data are integers, take them as binary data and sort from least significant to most significant)
+
+When you are able to make assmptions about what the data is, and you are able to access that data, you can beat O(nlogn)
+
+
+PROOF IDEA
+
+Fix a comparison-based sorting method and an array length n
+
+Consider input arrays containing {1,2,3 ... n} in some order
+
+n elements can show up in n! (n-factorial) possible ways
+
+Suppose algorithm always makes <= k comparisons to correctly sort these n! inputs
+
+Across all n! possible inputs, algorithm exhibits <= 2^k distinct executions
+
+
+PROOF IDEA (cont'd)
+
+By the pigeonhole principle:
+	pigeons: n! different inputs
+	holes: 2^k executions the sorting method can possibly take on
+	
+	If the number of k comparisons is so small that 2^k comparisons < n!, then one hole gets two pigeons
+	
+		Two inputs get treated the exact same way
+		
+		THIS IS PROBLEMATIC
+		
+		We fed two pigeons, and the algorithm cannot determine which of the two it is dealing with
+		
+			THEREFORE, such a sorting algorithm must get one of them incorrect
+			
+So:
+	Since method is correct, 2^k <= n! (solve)
+	
+	k >= n/2 log2 n/2
+	
+	k >= OM(nlogn)
+	
+
+IX: GRAPHS AND THE CONTRACTION ALGORITHM
+
+GRAPS AND MINIMUM CUTS
+
+Goals:
+	- Further practice with randomized algorithms
+		- in a new application domain (graphs)
+	- Introduction to graphs and graph algorithms
+	
+	Also: "only" 20 years old!
+	
+
+GRAPHS
+
+Represent pair-wise relationships among a set of objects
+
+Two Ingredients:
+	- Verticies (V) (plural of vertext); aka as "nodes"
+	
+		These are the objects we are analyzing
+	
+	- Edges (E) = pairs of vertices 
+	
+
+Two types:
+
+	- undirected graphs
+	- directed graphs
+	
+Determined by edges being directed (ordered) or undirected (unordered)
+
+Directed edge, first vertex and second vertex (called "tail" and "head" respectively)
+
+Directed edges are often called arcs
+
+Directed graphs have arrows on the edges - arrows point to the second vertex, or head
+
+
+Examples:
+
+	road networks (driving directions from point a to point b); verticies are intersections, edges are roads
+	the Web (verticies are web pages, edges are hyperlinks)
+		head of the directed edge is the page the hyperlink points to
+	Social Networks; verticies are individuals, verticies are relationships
+	Precedence Constraints; what courses to take in what order to graduate on time?	
+		e.g. pre-requisites/depdencies as vertices in a directed graph
+
+
+CUTS OF GRAPHS
+
+Definition: a cut of a graph (V, E), is a partition of V into two non-empty sets A and B
+
+	Undirected: you will have edges with both endpoints in a or b, and edges with endpoints in both a and b
+	Directed: same as undirected, but with two categories of inter-set edges (a => b, and b => a)
+	
+Definition: the crossing edges of a cut (A, B) are those with:
+	- one endpoint in each of (A, B) [undirected]
+	- tail in a, head in b [directed]
+	
+This course will focus on edges going left to right
+
+QUIZ: roughly how many cuts does a graph with n vertices have?
+	Answer: 2^n
+	
+	For each vertex we have two choices; go in set "a" or set "b"
+	
+	2^n possible choices / cuts overall
+	
+	strictly speaking, the choices total are 2^n - 2 because you cannot have a or b be empty
+	
+
+THE MINIMUM CUT PROBLEM
+
+Input: an undirected graph G = (V, E)
+	[parellel edges allowed]
+	
+Goal: Compute a cut with fewest number of crossing edges (a min cut)
+
+[see other video for representation of input]
+
+Note: Sometimes, even a single vertex can define the minimum cut of a graph
+
+
+
+A FEW APPLICATIONS
+
+
+- Identify network bottlenecks / weaknesses
+	A min cut allows you to identify weaknesses in your network
+
+	Someone else's network, and understanding the weakpoint in their network
+
+	USA and USSR computed minimum cuts to identify ways to disrupt one another
+
+
+- Community detection in social networks
+	small communities that are highly inter-connected, but weakly connected to everybody else
+	
+- image segmentation
+	- input = graph of pixels
+	- edge beween two pixels that are neighboring
+	- use edge weights [(u, v) has large weight => "expect" (u, v) to come from same object]
+	- the hope is that the min cut will rip off one of the contiguous objects in the image
+
+
+GRAPH REPRESENTATIONS
+
+QUIZ: Consider an undirected graph that has n vertices, no parellel edges, and is connected (i.e., "in one piece"). 
+What is the minimum and and maximum number of edges that the graph could have, respectively?
+
+ANSWER: n-1 and n(n-1)/2
+
+My reasoning was that all vertices can be connected to each other, and that is n-1 options since a vertex cannot
+be connected to itself
+
+n choose 2 as the max (recall: no parellel arcs)
+
+
+
+SPARSE VS DENSE GRAPHS
+
+Let n = # of vertices, m = # of edges
+
+(^standard notation)
+
+In most (but not all) applications, m is OM(n) and O(n^2) 
+	under the assumption of parellel arcs
+	
+Number of edges will be between linear in n and quadradic in n
+
+SPARSE: m is O(n) or close to it
+DENSE: m is closed to O(n^2)
+
+(note, people tend to get sloppy about this when they talk about graphs)
+
+
+THE ADJACENCY MATRIX
+Represent C by a nxn 0-1 matrix A, where 
+	Aij = 1 (if there is an edge between vertices i and j in the graph)
+	
+	Variants:
+		Aij = # of i-j edges (if parellel edges)
+		Aij = weight of i-j edge (if any)
+		Aij = +1 if i => j, -1 if i <= j (directed edges)
+		
+QUIZ: How much space does an adjacency matrix require, as a function of the number n of vertices and the number m of edges?
+
+ANSWER: Theta(n^2) 
+
+It is an nxn matrix - in a sparse graph this is a super wasteful representation
+
+
+ADJACENCY LISTS
+Dominate representation we will be using
+
+Array of vertices
+Array of edges
+
+- each edge points to its endpoints
+- each vertex will point to all edges of which it is a member
+	in a directed graph keep track of all edges where it is the tail
+	
+
+How much space does an adjacency list representation require, as a function of the number "n" of vetices and the number "m" of edges?
+
+Theta(m + n)
+Linear space in the size of the graph
+
+array or list of vertices = Theta(n)
+array or list of edges = Theta(m)
+each edge points to its points = Theta(m)
+each vertex points to edges indicent on it = Theta(n) (one-to-one space with third category)
+	- assuming typical sparse graph
+	
+
+Question: which one is better?
+
+Answer: depends on the density of your graph and operations you want to support
+
+This Class: focuses on Adjacency lists; due to operations we want and the graph density we will be working with
+
+Adjacency Matricies are good for operations we don't typically use; most present-day networks are sparse (like the World Wide Web)
+
+The Adjacency Matrix would be "totally out" for huge sparse graphs like the Web
+
+Adjacency Lists keep us within the limits of computation even at the scale of the world wide web
+
+
+============================================================================================
+RANDOM CONTRACTION ALGORITHM
+
+Min cut goal: compute a cut with fewest number of crossing edges (a min cut)
+
+RANDOM CONTRACTION ALGORITHM
+(only about 20 years old)
+[Karger, early 90s, Stanford]
+
+**PSEUDOCODE**
+while there are more than 2 vertices:
+	- pick a remaining edge (u, v) uniformly at random
+	- merge (or "contract") u and v into a single vertex
+		- may create parellel edges (keep)
+		- may create self loop (delete)
+	- each iteration decreases vertices (n-2 iterations)
+return cut represented by final 2 vertices
+
+1	3	5
+2	4	3
+3	2	1
+4	5
+5	1	4
+
+
+
+EXAMPLE
+It sometimes identifies a min cut and sometimes does not!
+Is this useful? What is the probability of the right answer?
+
+
+=============================================================================
+ANALYSIS OF CONTRACTION ALGORITHM
+
+
+THE SETUP
+Question: what is the probability of success? (output: min cut a, b)
+
+Fix a graph G = (V, E) with n vertices, m edges
+Fix a min cut, (A, B) - just one distinguished min cut; we are successful only if we get this specific cut
+
+Let k = # of edges crossing (A, B); call these edges F
+
+
+WHAT COULD GO WRONG?
+1. One of the edges in F gets chosen for contraction; it causes A and B to be fused together
+	The algorithm will not output (A, B) if this edge (of F) is selected
+
+2. Suppose only edges inside A or insie B get contracted
+	Algorithm will output (A, B)
+	
+Thus: Pr[output is (A,B)] = Pr[never contracts and edge of F]
+
+For an iteration i, let Si be a failure
+
+Let Si = event that an edge of F contract in iteration i
+
+QUIZ: What is the probability that an edge crossing the minimum cut (A,B) is chose in the first iteraion (as a function of the number of vertices n, the number of edges m, and the number k of crossing edges)?
+
+ANSWER: k/m
+
+k = crossing edges (bad outcomes)
+m = total edges
+
+k/m is exact probability for bad choice in single iteration
+
+We are going to want to get a bound as a function of vertices n, instead of m; it is hard to keep track of edges since we can delete self-loops
+
+One less vertex, however, with each iteration
+
+
+THE FIRST ITERATION
+
+Key Observation: degree of each vertex is at least k
+	degree = # of indicent edges
+	
+every vertex much have a decent number of neighbors by it
+
+Reason: each vertex v defines a cut ({v}, V - {v})
+
+v ---- (V - {v})
+
+= Deg(v) >= k
+
+Since SUM(degree(v)) = 2m
+
+KEY: each time you add a new edge to a graph, the number of edges goes up by 1, the degree of each of the endpoints of that edge go up by 1 (2 endpoints). Thereby the sum of the degrees goes up by 2 for every new edge
+
+Therefore when you've added all edges, the number of degrees is double the number of edges that you've added
+
+Every degree is at least k, and we have n nodes, therefore we can flip the above inequality to:
+
+	m >= kn/2
+
+put this together with probability of bad choice:
+
+Pr[S1] = k/m
+
+m >= kn / 2
+
+with substitution = 2/n
+
+aka k / (kn / 2)
+
+
+
+THE SECOND ITERATION
+// probabiliy that we don't screw up in iteration one or two
+Pr[S1 N S2] = Pr[S2 | S1] * Pr[S1]
+
+// otherwise knowns as probability we did not screw up in the second iteration times
+// the probablity we did not screw up the in first iteration
+
+Pr[S2 | S1] * Pr[S1]
+
+1 - k/remaining edges * >= (1 - 2/n)
+
+re-write bound as function of remaining vertices
+
+every node in the graph induces a cut; any single node in the contracted graph, can still be thought of as a cut in the original graph
+
+i.e. supernode N of 12 nodes is a cut with those 12 on one side
+
+Note: all nodes in contract graph define cuts in G (with at least k crossing edges)
+
+	=> all degress in contracted graph are at least k
+
+The number of remaining edges is at least:
+
+1/2 * 
+{summing over degrees of vertices double-counted the edges} 
+
+k *
+{degree of each vertex is at least k}
+
+n - 1
+{number of vertices, which we know is at least n-1}
+
+
+So: we plug the lower bound in the remaining edges
+
+in lower bounding the denominator, we upper bound the fraction, which gives us a lower bound on 1 - {this fraction}
+which is what we want
+
+So: Pr[ S2 | S1 ] >= 1 - 2/(n-1)
+
+
+ALL ITERATIONS
+
+In general:
+Pr[S1 N S2 ... N S(n-2)] = 
+	
+	>= (1 - 2/n) * (1 - 2/n-1) * (1 - 2/n-1) ... (1 - 2/(n-(n-4))) * (1 - 2/(n-(n-3)))
+	
+	= we will be left with only two largest terms in the denominator, and two smallest terms in the numerator
+	
+	=2/n * (n-1) >= 1/n^2
+	
+	1/n^2 is a lower bound
+	
+
+Problem: low success probability!
+
+BUT: non-trivial; better-than-expected
+
+exponential number of cuts in the graph; recall 2^n cuts
+
+If you tried to pick a random cut, you would be doing way worse! (1/2^n)
+
+Repeated trials can turn a success probability that is incredibly small into a failure probability that is incredibly small
+
+
+REPEATED TRIALS
+Run it repeatedly and remember the best cut we ever see
+
+How many trials needed?
+
+(note we will define variables to be independent using fresh randomness)
+Let Ti = event that the cut (A,B) is found on the ith try
+
+	=> by definition, different Ti's are independent
+	
+So: Pr[all N trials fail] = Pr[nT1 nT2 ... nTn]
+
+= PI(i=1; i <= n) Pr[nTi]
+
+= (1 - 1/n^2) ^N
+
+How big does N need to be?
+
+Caclulus Fact: For all real numbers x, the following inequality applies
+
+	1 + x <= e ^ x
+	
+e ^ 0 = 1, and then because of the exponential value of e, it bounds above 1 + x
+
+We can use this to provide a cleaner upper value than 1-something ^ something
+
+So: if we take N = n^2, Pr[all fail] <= (e ^ -1/n^2) ^ n2 = 1/e  (aka e^-1)
+
+If we take N = n^2 * ln * n, Pr[all fail] <= (1/e) ^ ln * n = 1/n
+
+
+Take an algorithm that almost always fails, but by using repeated trials we can get a sufficiently high success rate of 1/n
+
+We transformed almost always failing to almost always succeeding
+
+(success rate 1/(n^2) was big enough that we could do this)
+
+this is an algorithmic technique (repeated trials)
+
+number of repeated trials needed is:
+ 
+	- the reciprocol of original success probability 
+	+ boosted by a further logarithmic factor
+	
+
+RUNNING TIME
+
+We have not obsessed over running time alone; it is not that great
+
+This is not a for-free primitive
+
+Running Time: polynomial in n and m but slow (still better than exponential (e.g. 2^n if choosing by random via brute force through all possible cuts)
+
+lower bound:
+OM((n^2 + log factor) * m )
+
+n^2 trials
+Each trial is another factor of m
+
+This is a bigger polynomial; but this is a very simple and elegant algorithm
+
+There has been follow up work with lots of optimizations (getting more clever, using work from previous trials to optimize later trials)
+
+These optimizations are outside the scope of this course
+
+
+===============================================================================
+COUNTING MINIMUM CUTS
+
+
+THE NUMBER OF MINIMUM CUTS
+
+Note: a graph can have multiple min cuts
+
+{e.g., a tree with n vertices has (n-1) minimum cuts}
+
+Question: what's the largest number of minimum cuts that a graph with n vertices must have?
+
+n - 1 > x > 2^n
+
+Answer: (n ch 2) AKA n*(n-1) / 2
+
+Undirected graphs only have polynomially many minimum cuts, a useful facts in many different applications
+
+Take n=8 n-cycle (aka octogon)
+
+In a cycle you only get a cut if you remove a pair of edges
+
+Each pair of edges defines a distinct minimum cut (with two crossing edges)
+
+=> has >= (n ch 2) min cuts
+
+
+THE UPPER BOUND
+For each T minimum cut, what is the probability the contraction algorithm outputs the (Ai Bi) min cut
+
+By the contraction algorithm, it is at least 1/n^2 (sloppy) or 2/n - (n-1) (clean) AKA 1/(n ch 2)
+
+Each fixed cut Ai, Bi
+
+Si's are disjoint events, (i.e. only one can happen)
+
+	=> their probabilities sum to at most 1
+	
+Thus: 
+
+	t / (n ch 2) <= 1
+	
+	t <= (n ch 2)
+	
+Every graph has at most a quadratic number of minimum cuts
+
+
+
+PROBLEM SET #4
+
+1. How many different minimum cuts are there in a tree with n nodes (i.e. n-1 edges)?
+
+NOT (n ch 2); how many edges do you need to remove to define a minimum cut?
+	I think this is 2^n - 2; the total number of edges minus the number required for a minimum cut
+
+
+NOT: 2^n - 2; note the question asks about *minimum* cuts
+
+TRUE: n - 1; one min cut per node (assuming it is not an n-cycle graph)
+	"each edge defines a distinct minimum cut (with one crossing edge)
+
+2. Let "output" denote the cut output by Karget's min cut algorithm on a given connected graph with n vertices, 
+and let p = 1/(n ch 2)
+
+For hints on this question, you might want to watch the short opitonal video on "Counting Minimum Cuts"
+
+TRUE: For every graph G with n nodes, there exists a min cut (A, B) of G such that:
+	Pr[out = (A, B)] >= p
+
+	"this is even weaker than what we proved in lecture"
+
+NO: For every graph G with n nodes, there exists a min cut (A,B) such that
+	Pr[out = A,B] <= p
+	
+NO: For every graph G with n nodes and every min cut (A,B),
+	Pr[out = A,B] <= p
+	
+TRUE: for every graph G with n nodes and every min cut (A,B) of G:
+	Pr[out = A,B] >= p
+	
+	"this is exactly what we proved in lecture"
+	
+TRUE: There exists a graph G with n nodes and a min cut (A,B) of G such that
+	Pr[out = A,B] <= p
+	
+	I think this may be referring to the cycle network, where you need to remove two edges to get a min cut	
+
+	"take G to be an n-cycle. How many different minimum cuts does it have?"
+
+NOT ALL CORRECT ANSWERS
+
+
+3. Let .5 < alpha < 1 be some constant. Suppose you are looking for the median element in an array using
+RANDOMIZED SELECT (as explained in lecture). What is the probability taht after the first iteration the
+size of the subarray in which the element you are looking for lies is <= alpha times the size of the original
+array?
+
+CORRECT: 2*alpha - 1
+
+"preciesly, as the pivot selected should lie between 1 - alpha and alpha times the original array"
+
+
+4. Let 0 < alpoha < 1 be a constant, independent of n. Consider an execution of RSelect in which you manage
+to throw out at least 1 - alpha fraction of the remaining elements before you recurse. What is the 
+maximum number of recursive calls you'll make before terminating?
+
+CORRECT: - log(n) / log(alpha)
+
+
+5. The minimum s-t cut problem is the following: The input is an undirected graph and two distinct vertices
+of the graph are labelled "s" and "t". The goal is to compute the minimum cut (i.e., fewest number of 
+crossing edges) that satisfies the property that s and t are on different sdies of the cut.
+
+Suppose someone gives you a subroutine for this s-t minimum cut problem via an API. Your job is to solve
+the original minimum cut problem (the one discussed in the lectures), when all you can do is invoke
+the given min s-t cut subroutine.
+(That is, the goal is t oreduce the min cut problem tot hte min s-t cut problem)
+
+Now suppose you are given an instance of the min cut problem -- that is, you are given an undirected 
+graph (with no specially labelled vertices) and need to compute the minimum cut. What is the minimum 
+number of times that you need to call the given min s-t subrouting to guarantee that you'll find a 
+min cut of the given graph?
+
+WRONG: (n ch 2)
+	"can you do better?"
+	
+I think this is (n-1) - there were n^2 trials in the original algorithm to define success
+The subroutine is guaranteed to output the minimum cut for two given vertices
+Therefore, we simply need to traverse all of the edges, which is equal to (n-1)
+
+TRUE: n-1
+	"call an arbitrary vertex s, let t range over all other n-1 vertices, and return the best of the s-t min cuts found"
+	
+
+	 
+
