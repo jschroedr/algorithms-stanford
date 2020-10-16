@@ -36,9 +36,7 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 # Object Files
 OBJECTFILES= \
 	${OBJECTDIR}/contract.o \
-	${OBJECTDIR}/edge.o \
-	${OBJECTDIR}/main.o \
-	${OBJECTDIR}/vertex.o
+	${OBJECTDIR}/main.o
 
 
 # C Compiler Flags
@@ -70,20 +68,10 @@ ${OBJECTDIR}/contract.o: contract.c
 	${RM} "$@.d"
 	$(COMPILE.c) -g -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/contract.o contract.c
 
-${OBJECTDIR}/edge.o: edge.c
-	${MKDIR} -p ${OBJECTDIR}
-	${RM} "$@.d"
-	$(COMPILE.c) -g -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/edge.o edge.c
-
 ${OBJECTDIR}/main.o: main.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.c) -g -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main.o main.c
-
-${OBJECTDIR}/vertex.o: vertex.c
-	${MKDIR} -p ${OBJECTDIR}
-	${RM} "$@.d"
-	$(COMPILE.c) -g -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/vertex.o vertex.c
 
 # Subprojects
 .build-subprojects:

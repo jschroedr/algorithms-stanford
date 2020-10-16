@@ -5,7 +5,6 @@
                    displayName="Header Files"
                    projectFiles="true">
       <itemPath>contract.h</itemPath>
-      <itemPath>edge.h</itemPath>
       <itemPath>vertex.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles"
@@ -16,9 +15,7 @@
                    displayName="Source Files"
                    projectFiles="true">
       <itemPath>contract.c</itemPath>
-      <itemPath>edge.c</itemPath>
       <itemPath>main.c</itemPath>
-      <itemPath>vertex.c</itemPath>
     </logicalFolder>
     <logicalFolder name="TestFiles"
                    displayName="Test Files"
@@ -49,13 +46,7 @@
       </item>
       <item path="contract.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="edge.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="edge.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="main.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="vertex.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="vertex.h" ex="false" tool="3" flavor2="0">
       </item>
@@ -85,13 +76,7 @@
       </item>
       <item path="contract.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="edge.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="edge.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="main.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="vertex.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="vertex.h" ex="false" tool="3" flavor2="0">
       </item>

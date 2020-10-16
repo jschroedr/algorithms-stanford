@@ -4,10 +4,10 @@
  * and open the template in the editor.
  */
 
-#include <stdlib.h>;
-#include <string.h>;
-#include "vertex.h";
-#include "edge.h";
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include "contract.h"
 
 
 // function: pick a remaining edge at random
@@ -45,7 +45,7 @@ void replaceEdgeReference(vertex * old, vertex * new, int eidx) {
     }
 }
 
-void shuffleVertices(vertex * vertices, vertex * tail, int vlen) {
+void shuffleVertices(vertex ** vertices, vertex * tail, int vlen) {
     int shuffle = 0;
     for(int i = 0; i < vlen; i ++){
         vertex * v = vertices[i];
@@ -63,7 +63,7 @@ void shuffleVertices(vertex * vertices, vertex * tail, int vlen) {
 // merge two verticies in given edge into a single vertex
     // keep parellel edges
     // locate and eliminate self loops
-void mergeVertices(edge e, vertex * vertices, int vlen) {
+void mergeVertices(edge * e, vertex ** vertices, int vlen) {
     
     // for the tail vertex's edges
     vertex * tail = e->tail;
@@ -73,29 +73,25 @@ void mergeVertices(edge e, vertex * vertices, int vlen) {
     
     for(int i = 0; i < tail->elen; i ++) {
         // replace all references to the tail with the head
-        replaceEdgeReference(e->tail->edges[i], e->head);
+        replaceEdgeReference(e->tail, e->head, i);
     }
 }
 
 // main function: 
-edge contractionAlgorithm(edge * edges, vertex * vertices, int vlen) {
-    int len = vlen;
+int contractionAlgorithm(edge ** edges, vertex ** vertices, int * vlen) {
+    int len = *vlen;
     
-    while(vlen > 0) {
+    while(len > 0) {
         // pick a remaining edge uniformly at random
         int idx = getRandomIndex(len);
         edge * e = edges[idx];
         
         // merge or "contract" u and v into a single vertex
-        mergeVertices(e, vertices);
+        mergeVertices(e, vertices, len);
         
         // since the tail just got merged into the head, we always subtract 1
-        vlen --;
+        len --;
     }
-    
-    // TODO: return cut resembled by two remaining vertices
-    edge minCut;
-    minCut->head = vertices[0];
-    minCut->tail = vertices[1];
-    return minCut;
+    // return the number of edges as the min cut
+    return vertices[0]->elen;
 }
