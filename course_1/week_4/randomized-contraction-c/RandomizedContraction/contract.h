@@ -18,4 +18,4 @@ typedef struct Edge {
 } edge;
 
 
-int contractionAlgorithm(edge ** edges, vertex ** vertices, int * vlen);
+int contractionAlgorithm(edge ** edges, int * elen, vertex ** vertices, int vlen);

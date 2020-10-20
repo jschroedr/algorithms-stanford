@@ -5,6 +5,7 @@
  */
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <time.h>
 #include "contract.h"
@@ -26,30 +27,10 @@ int getRandomIndex(int len) {
     return idx;
 }
 
-void replaceEdgeReference(vertex * old, vertex * new, int eidx) {
-    
-    // pick out the target edge to replace references on
-    edge * e = old->edges[eidx];
-
-    // either replace the head or the tail with the new vertex
-    if (strcmp(e->head->val, old->val) == 0) {
-        e->head = new;
-    } else {
-        e->tail = new;
-    }
-    
-    // if the edge is now circular, then destroy it
-    int circular = (strcmp(e->head->val, e->tail->val) == 0) ? 1 : 0;
-    if (circular == 1) {
-        free(e);
-    }
-}
-
-void shuffleVertices(vertex ** vertices, vertex * tail, int vlen) {
+vertex ** shuffleVertices(vertex ** vertices, vertex * tail, int vlen) {
     int shuffle = 0;
     for(int i = 0; i < vlen; i ++){
-        vertex * v = vertices[i];
-        if(strcmp(v->val, tail->val) == 0) {
+        if(strcmp(vertices[i]->val, tail->val) == 0) {
             shuffle = 1;
         } else {
             if (shuffle == 1) {
@@ -57,41 +38,85 @@ void shuffleVertices(vertex ** vertices, vertex * tail, int vlen) {
             }
         }
     }
+    return realloc(vertices, sizeof(vertex **) * (vlen));
 }
+
 
 // keep the head vertex of the edge (just a preference)
 // merge two verticies in given edge into a single vertex
     // keep parellel edges
     // locate and eliminate self loops
-void mergeVertices(edge * e, vertex ** vertices, int vlen) {
+vertex ** mergeVertices(edge * e, vertex ** vertices, int vlen) {
     
     // for the tail vertex's edges
     vertex * tail = e->tail;
     
     // recalculate the vertices array to exclude the tail
-    shuffleVertices(vertices, tail, vlen);
+    vertices = shuffleVertices(vertices, tail, vlen);
     
     for(int i = 0; i < tail->elen; i ++) {
         // replace all references to the tail with the head
-        replaceEdgeReference(e->tail, e->head, i);
+        if (
+                strcmp(
+                    ((edge *)tail->edges[i])->head->val,
+                    tail->val
+                ) == 0) {
+            ((edge *)tail->edges[i])->head = e->head;
+        } else {
+            ((edge *)tail->edges[i])->tail = e->head;
+        }
     }
+    return vertices;
 }
 
+edge ** shuffleEdges(edge ** edges, int * elen) {
+    int len = *elen;
+    while(1) {
+        int shuffle = 0;
+        for(int i = 0; i < *elen; i ++) {
+            if (shuffle == 1) {
+                edges[i - 1] = edges[i];
+            } else {
+                if(strcmp(edges[i]->head->val, edges[i]->tail->val) == 0) {
+                    printf("\nSAME: %s %s", edges[i]->head->val, edges[i]->tail->val);
+                    shuffle = 1;
+                    len --;
+                }
+            }
+        }
+        if (*elen == len) {
+            break;
+        } else {
+            *elen = len;
+        }
+    }
+    edges = realloc(edges, sizeof(edge **) * (*elen));
+    return edges;
+}
+
+
 // main function: 
-int contractionAlgorithm(edge ** edges, vertex ** vertices, int * vlen) {
-    int len = *vlen;
-    
-    while(len > 0) {
+int contractionAlgorithm(edge ** edges, int * elen, vertex ** vertices, int vlen) {
+    while(vlen >= 1) {
+        printf("\nVLEN: %d", vlen);
         // pick a remaining edge uniformly at random
-        int idx = getRandomIndex(len);
+        int idx = getRandomIndex(*elen - 1);
         edge * e = edges[idx];
         
         // merge or "contract" u and v into a single vertex
-        mergeVertices(e, vertices, len);
+        vertices = mergeVertices(e, vertices, vlen);
+        
+        edges = shuffleEdges(edges, elen);
         
         // since the tail just got merged into the head, we always subtract 1
-        len --;
+        vlen = vlen - 1;
     }
+    // print out the edges
+    printf("\nEDGES IN CUT");
+    for(int i = 0; i < *elen; i ++){
+        printf("\nhead: %s, tail: %s", edges[i]->head->val, edges[i]->tail->val);
+    }
+    
     // return the number of edges as the min cut
-    return vertices[0]->elen;
+    return *elen;
 }

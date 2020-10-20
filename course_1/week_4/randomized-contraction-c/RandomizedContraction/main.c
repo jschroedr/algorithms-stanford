@@ -14,14 +14,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
+#include <math.h>
 #include "contract.h"
 
 
 int vcheckExists(char * val, vertex ** vertices, int * vlen) {
     for(int i = 0; i < *vlen; i ++) {
-        vertex * v = vertices[i];
-        char * vval = v->val;
-        if(strcmp(vval, val) == 0) {
+        if(strcmp(vertices[i]->val, val) == 0) {
             return i;
         }
     }
@@ -29,62 +29,101 @@ int vcheckExists(char * val, vertex ** vertices, int * vlen) {
 }
 
 
-vertex * vCreate(char * val, vertex ** vertices, int * vlen) {
-    vertex * v = malloc(sizeof(vertex *));
+vertex ** vCreate(char * val, int valLen, vertex ** vertices, int * vlen) {
+    char * cpy = malloc(sizeof(char*) * (valLen + 1));
+    strncpy(cpy, val, valLen + 1);
+    vertex * v = malloc(sizeof(*v));
     v->elen = 0;
-    v->val = val;
-    vertices = realloc(vertices, sizeof(vertex) * (*vlen + 1));
+    v->val = cpy;
+    v->edges = malloc(sizeof(edge));
+    vertices = realloc(vertices, (*vlen + 1) * (sizeof(vertex*)));
+    if (!vertices) {
+        perror("struct allocation failure");
+        exit(EXIT_FAILURE);
+    }
     vertices[*vlen] = v;
-    *vlen ++;
-    return v;
+    *vlen = *vlen + 1;
+    return vertices;
 }
 
-vertex * vCheckAndCreate(char * val, vertex ** vertices, int * vlen) {
-    int vidx = vcheckExists(val, vertices, vlen);
+
+// TODO: need to return vertices AND the index to which we should extract the created vertex
+vertex ** vCheckAndCreate(int * vidx, char * val, int valLen, vertex ** vertices, int * vlen) {
+    *vidx = vcheckExists(val, vertices, vlen);
     
-    if (vidx == -1) {
+    if (*vidx == -1) {
         
         // if not, then create the head
-        return vCreate(val, vertices, vlen);
-    
-    } else {
-        // if so, then use the returned index to get the existing
-        return vertices[vidx];
+        vertices = vCreate(val, valLen, vertices, vlen);
+        *vidx = *vlen - 1;  // vidx is the position in the array, zero-indexed
     }
     
+    return vertices;
 }
 
 
-edge * eCreate(vertex * head, vertex * tail, edge ** edges, int * elen) {
-    edge * e = malloc(sizeof(edge *));
+edge ** eCreate(vertex * head, vertex * tail, edge ** edges, int * elen) {
+    edge * e = malloc(sizeof(*e));
     e->head = head;
     e->tail = tail;
     edges = realloc(edges, sizeof(edge) * (*elen + 1));
     edges[*elen] = e;
-    *elen ++;
-    return e;
-}
-
-
-vertex * getHeadVertex(char * val, vertex ** vertices, int * vlen) {
-    return vCheckAndCreate(val, vertices, vlen);
-}
-
-
-vertex * getTailVertex(vertex * head, char * val, vertex ** vertices, int * vlen, edge ** edges, int * elen) {
-    // for each column (2nd value on in row) ```````````````````````````
-    // TODO: when j > 1 (where j is col counter)
-    vertex * tail = vCheckAndCreate(val, vertices, vlen);
-
-    // AND create an edge, then link the edge to each of the corresponding 
-    // vertices
+    *elen = *elen + 1;
     
-    // note this does return an edge * if you decide later you need it
-    eCreate(head, tail, edges, elen);
+    head->edges = realloc(head->edges, sizeof(edge**) * (head->elen + 1));
+    head->edges[head->elen] = e;
+    head->elen = head->elen + 1;
+    
+    tail->edges = realloc(tail->edges, sizeof(edge**) * (tail->elen + 1));
+    tail->edges[tail->elen] = e;
+    tail->elen = tail->elen + 1;
+    
+    return edges;
 }
 
 
-void load(char * fname, vertex ** vertices, int * vlen, edge ** edges, int * elen) {
+int edgeExists(vertex * head, vertex * tail, edge ** edges, int * elen) {
+    for(int i = 0; i < *elen; i++) {
+        if(
+                (
+                    strcmp(
+                        edges[i]->head->val,
+                        head->val
+                    ) == 0 
+                    && 
+                    strcmp(
+                        edges[i]->tail->val,
+                        tail->val
+                    ) == 0
+                ) || (
+                    strcmp(
+                        edges[i]->tail->val,
+                        head->val
+                    ) == 0 
+                    && 
+                    strcmp(
+                        edges[i]->head->val,
+                        tail->val
+                    ) == 0    
+                )
+            )
+        {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+
+int runTrial(char * fname, int * vlen, int * elen) {
+    
+    vertex ** vertices = malloc(sizeof(vertex**));
+    
+    edge ** edges = malloc(sizeof(edge**));
+    
+    *vlen = 0;
+    *elen = 0;
+    
     // open the file
     FILE * fp = fopen(fname, "r");
     if (fp == NULL) {
@@ -98,41 +137,88 @@ void load(char * fname, vertex ** vertices, int * vlen, edge ** edges, int * ele
     char * val = malloc(sizeof(char));
     int valLen = 0;
     
-    vertex * head = NULL;
-    vertex * tail = NULL;
+    int * vidx = malloc(sizeof(int*));
+    *vidx = 1;
+    vertex * head = malloc(sizeof(vertex*));
+    vertex * tail = malloc(sizeof(vertex*));
     
     while(nread = getline(&line, &len, fp) != -1) {
            
         int colCount = 0;
-        
+        int i = 0;
         while(1) {
-            char c = line[c];
-            if(c == '\t' || c == '\n') {
+            char c = line[i];
+            if(!isdigit(c)) {
+                val[valLen] = '\0';
                 
                 if(colCount == 0) {
-                    head = getHeadVertex(val, vertices, vlen);
+                    vertices = vCheckAndCreate(vidx, val, valLen, vertices, vlen);
+                    head = vertices[*vidx];
                 } else {
-                    if(head == NULL){
+                    if(!head){
                         perror("head vertex is NULL");
                         exit(EXIT_FAILURE);
                     }
-                    tail = getTailVertex(head, val, vertices, vlen, edges, elen);
+                    vertices = vCheckAndCreate(vidx, val, valLen, vertices, vlen);
+                    tail = vertices[*vidx];
+
+                    
+                    // if the edge does not already exist...
+                    // AND create an edge, then link the edge to each of the corresponding 
+                    // vertices
+                    if(edgeExists(head, tail, edges, elen) == 0) {
+                        edges = eCreate(head, tail, edges, elen);   
+                    }
+
                 }
                 valLen = 0;
+                
                 colCount ++;
                 
                 if (c == '\n') {
                     break;  // is there a better way?
                 }
             } else {
-                val = realloc(val, sizeof(char *) * (valLen + 1));
+                val = realloc(val, sizeof(char *) * (valLen + 2));
                 val[valLen] = c;
                 valLen ++;
             }
+            i ++;
         }
     }
     
     fclose(fp);
+    
+    int cut = contractionAlgorithm(edges, elen, vertices, *vlen);
+    
+    // TODO: free up resources for this run
+    free(val);
+    free(vidx);
+    if(*elen > 0) {
+        free(edges);
+    }
+    
+    return cut;
+}
+
+
+// https://www.programmingsimplified.com/c-program-find-factorial
+long factorial(int n)
+{
+  int c;
+  long r = 1;
+
+  for (c = 1; c <= n; c++)
+    r = r * c;
+
+  return r;
+}
+
+
+
+// https://www.geeksforgeeks.org/program-calculate-value-ncr/
+long nCr(int n, int r) {
+    return factorial(n) / (factorial(r) * factorial(n - r));
 }
 
 
@@ -141,20 +227,30 @@ void load(char * fname, vertex ** vertices, int * vlen, edge ** edges, int * ele
  */
 int main() {
     
-    char * fname = "/data/input_random_1_6.txt";
-    vertex ** vertices = malloc(sizeof(vertex));
+    char * fname = "/home/jake/Documents/Learning/algorithms_stanford/course_1/week_4/randomized-contraction-c/RandomizedContraction/data/input_random_1_6.txt";
+    
     int * vlen = malloc(sizeof(int *));
-    *vlen = 0;
-    edge ** edges = malloc(sizeof(edge));
     int * elen = malloc(sizeof(int *));
-    *elen = 0;
+    int mincut = runTrial(fname, vlen, elen);
     
-    load(fname, vertices, vlen, edges, elen);
+    int nChoose2 = nCr(*vlen, 2);
+    long trials = nChoose2 * log((float)*vlen);
+    trials --;
     
-    // TODO: call contraction algorithm (and run successfully)
-    int mincut = contractionAlgorithm(edges, vertices, vlen);
+    printf("\nnchoose2: %d, trials: %d", nChoose2, trials);
+    
+    for(int t = 0; t < trials; t++) {
+        sleep(5);
+        int cut = runTrial(fname, vlen, elen);
+        printf("\ncut: %d", cut);
+        if(cut < mincut) {
+            mincut = cut;
+            printf("\nmincut: %d", mincut);
+        }
+    }
     
     // TODO: print out the min cut 
     printf("Min Cut: %d", mincut);
+    
     return (EXIT_SUCCESS);
 }
