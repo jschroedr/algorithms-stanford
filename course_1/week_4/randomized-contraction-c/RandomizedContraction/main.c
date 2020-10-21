@@ -194,22 +194,20 @@ int runTrial(char * fname, int * vlen, int * elen) {
     // TODO: free up resources for this run
     free(val);
     free(vidx);
-    if(*elen > 0) {
-        free(edges);
-    }
     
     return cut;
 }
 
 
 // https://www.programmingsimplified.com/c-program-find-factorial
-long factorial(int n)
+long long factorial(long long n)
 {
-  int c;
-  long r = 1;
+  long long c;
+  long long r = 1;
 
-  for (c = 1; c <= n; c++)
-    r = r * c;
+  for (c = 1; c <= n; c++) {
+      r = r * c;
+  }
 
   return r;
 }
@@ -227,20 +225,25 @@ long nCr(int n, int r) {
  */
 int main() {
     
-    char * fname = "/home/jake/Documents/Learning/algorithms_stanford/course_1/week_4/randomized-contraction-c/RandomizedContraction/data/input_random_1_6.txt";
+    char * fname = "/home/jake/Documents/Learning/algorithms_stanford/course_1/week_4/randomized-contraction-c/RandomizedContraction/data/assignment.txt";
     
     int * vlen = malloc(sizeof(int *));
     int * elen = malloc(sizeof(int *));
     int mincut = runTrial(fname, vlen, elen);
     
-    int nChoose2 = nCr(*vlen, 2);
-    long trials = nChoose2 * log((float)*vlen);
+    // int nChoose2 = nCr(*vlen, 2);
+    // long long trials = nChoose2 * log((float)*vlen);
+    int nChoose2 = 0;
+    long long trials = *vlen * log((float)*vlen);
     trials --;
     
     printf("\nnchoose2: %d, trials: %d", nChoose2, trials);
     
+    // use the current time as seed for the random generator
+    srand(time(0));
+    
     for(int t = 0; t < trials; t++) {
-        sleep(5);
+        // sleep(1);
         int cut = runTrial(fname, vlen, elen);
         printf("\ncut: %d", cut);
         if(cut < mincut) {
