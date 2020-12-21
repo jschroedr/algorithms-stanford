@@ -27,12 +27,13 @@ vertex ** shuffleVertices(vertex ** vertices, vertex * tail, int vlen) {
     int len = 0;
     vertex ** new = malloc(sizeof(vertex **) * vlen);
     for(int i = 0; i < vlen; i ++) {
+        // printf("\n%d:%s", i, vertices[i]->val);
         if(strcmp(vertices[i]->val, tail->val) != 0) {
             new[len] = vertices[i];
             len ++;
         }
     }
-    new = realloc(new, sizeof(vertex **) * (len + 1));
+    new = realloc(new, sizeof(vertex **) * len);
     return new;
 }
 
@@ -66,7 +67,7 @@ edge ** removeCircularEdges(edge ** edges, int * elen) {
     *elen = len;
      
     // remove any unnecessary memory usage
-    new = realloc(new, sizeof(edge **) * (len + 1));
+    new = realloc(new, sizeof(edge **) * (len));
     return new;
 }
 
@@ -91,13 +92,15 @@ int contractionAlgorithm(edge ** edges, int * elen, vertex ** vertices, int vlen
         vlen = vlen - 1;
     }
 
-    /*
+    
     // print out the edges
+    /*
     printf("\nEDGES IN CUT");
     for(int i = 0; i < *elen; i ++){
-        printf("\nhead: %s, tail: %s", edges[i]->head->val, edges[i]->tail->val);
+        printf("\n\thead: %s, tail: %s", edges[i]->head->val, edges[i]->tail->val);
     }
-     */
+    */
+    
     
     // return the number of edges as the min cut
     return *elen;

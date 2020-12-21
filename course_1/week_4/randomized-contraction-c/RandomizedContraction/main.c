@@ -149,8 +149,15 @@ int runTrial(char * fname, int * vlen, int * elen) {
         while(1) {
             char c = line[i];
             if(!isdigit(c)) {
+                
                 val[valLen] = '\0';
                 
+                // check for value validity before continuing
+                if(atoi(val) == 0) {
+                    break;
+                }
+                // printf("\n%s", val);
+
                 if(colCount == 0) {
                     vertices = vCheckAndCreate(vidx, val, valLen, vertices, vlen);
                     head = vertices[*vidx];
@@ -162,7 +169,7 @@ int runTrial(char * fname, int * vlen, int * elen) {
                     vertices = vCheckAndCreate(vidx, val, valLen, vertices, vlen);
                     tail = vertices[*vidx];
 
-                    
+
                     // if the edge does not already exist...
                     // AND create an edge, then link the edge to each of the corresponding 
                     // vertices
@@ -172,9 +179,10 @@ int runTrial(char * fname, int * vlen, int * elen) {
 
                 }
                 valLen = 0;
-                
+                val = realloc(val, sizeof(char *) * (valLen + 1));
+
                 colCount ++;
-                
+
                 if (c == '\n') {
                     break;  // is there a better way?
                 }
@@ -191,32 +199,12 @@ int runTrial(char * fname, int * vlen, int * elen) {
     
     int cut = contractionAlgorithm(edges, elen, vertices, *vlen);
     
-    // TODO: free up resources for this run
+    // free up resources for this run
     free(val);
     free(vidx);
-    
+    free(edges);
+    free(vertices);
     return cut;
-}
-
-
-// https://www.programmingsimplified.com/c-program-find-factorial
-long long factorial(long long n)
-{
-  long long c;
-  long long r = 1;
-
-  for (c = 1; c <= n; c++) {
-      r = r * c;
-  }
-
-  return r;
-}
-
-
-
-// https://www.geeksforgeeks.org/program-calculate-value-ncr/
-long nCr(int n, int r) {
-    return factorial(n) / (factorial(r) * factorial(n - r));
 }
 
 
@@ -226,34 +214,40 @@ long nCr(int n, int r) {
 int main() {
     
     char * fname = "/home/jake/Documents/Learning/algorithms_stanford/course_1/week_4/randomized-contraction-c/RandomizedContraction/data/assignment.txt";
+    // char * fname = "/home/jake/Documents/Learning/algorithms_stanford/course_1/week_4/randomized-contraction-c/RandomizedContraction/data/input_random_17_75.txt";
+    
     
     int * vlen = malloc(sizeof(int *));
     int * elen = malloc(sizeof(int *));
     int mincut = runTrial(fname, vlen, elen);
     
-    // int nChoose2 = nCr(*vlen, 2);
-    // long long trials = nChoose2 * log((float)*vlen);
-    int nChoose2 = 0;
-    long long trials = *vlen * log((float)*vlen);
+    int trials = 100;
     trials --;
     
-    printf("\nnchoose2: %d, trials: %d", nChoose2, trials);
+    printf("\ntrials: %d", trials);
+    
+    printf("\nMin Cut: %d", mincut);
+    
+    int t = time(NULL);
     
     // use the current time as seed for the random generator
-    srand(time(0));
+    srand(t);
     
     for(int t = 0; t < trials; t++) {
         // sleep(1);
         int cut = runTrial(fname, vlen, elen);
-        printf("\ncut: %d", cut);
+        // printf("\ncut: %d", cut);
         if(cut < mincut) {
             mincut = cut;
-            printf("\nmincut: %d", mincut);
         }
+        
+        printf("\ncut: %d, mincut: %d", cut, mincut);
     }
     
     // TODO: print out the min cut 
-    printf("Min Cut: %d", mincut);
+    printf("\nMin Cut: %d", mincut);
+    
+    printf("\nSeed: %d", t);
     
     return (EXIT_SUCCESS);
 }
